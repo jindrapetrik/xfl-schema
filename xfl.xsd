@@ -8,15 +8,15 @@ elementFormDefault="qualified"
         <xs:documentation xml:lang="en"><![CDATA[
             <h1>XFL Schema</h1>
             <p>Schema describing XFL files used by Adobe Flash Professional CS5 and later.</p>
-            <p>Version: <b>Unreleased</b>, release date (yyyy-mm-dd)</p>
+            <p>Version: <b>0.0.1</b>, release date (2025-10-19)</p>
             <p>Author: Jindra Petrik (JPEXS)</p>
             <p>Contact: jindra.petrik@gmail.com</p>
             <p>WARNING: Schema might be incomplete or inaccurate.</p>
             <p>Parts where I really don't know are marked with "Unsure" prefix.</p>
         ]]></xs:documentation>
         <xs:appinfo>
-            <meta:version xmlns:meta="urn:metadata">0.0.0</meta:version>
-            <meta:releaseDate xmlns:meta="urn:metadata">yyyy-mm-dd</meta:releaseDate>
+            <meta:version xmlns:meta="urn:metadata">0.0.1</meta:version>
+            <meta:releaseDate xmlns:meta="urn:metadata">2025-10-19</meta:releaseDate>
         </xs:appinfo>
     </xs:annotation>
 
