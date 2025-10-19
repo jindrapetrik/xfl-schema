@@ -3161,9 +3161,14 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">Version information of the creator tool.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="majorVersion" type="xs:positiveInteger" use="optional">
+            <xs:attribute name="majorVersion" type="xs:nonNegativeInteger" use="optional">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Major version number of the creator tool.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="minorVersion" type="xs:nonNegativeInteger" use="optional" default="0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Minor version number of the creator tool.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="buildNumber" type="xs:positiveInteger" use="optional">
