@@ -1592,6 +1592,52 @@ elementFormDefault="qualified"
                     <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="DOMVideoInstance">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Transformation matrix for the video instance.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Transformation point for the video instance.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>                                                    
+                    </xs:sequence>
+                    <xs:attribute name="frameLeft" type="xs:integer" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Left frame of the video instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="frameTop" type="xs:integer" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Top frame of the video instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="frameRight" type="xs:integer" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Right frame of the video instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="frameBottom" type="xs:integer" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Bottom frame of the video instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="name" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Name of the video instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="libraryItemName" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Name of the video in the library.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
             <xs:element name="DOMStaticText">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Static text element.</xs:documentation>
