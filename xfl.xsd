@@ -824,6 +824,11 @@ elementFormDefault="qualified"
                                                                 <xs:documentation xml:lang="en">Target window or frame for the hyperlink.</xs:documentation>
                                                             </xs:annotation>    
                                                         </xs:attribute>
+                                                        <xs:attribute name="lineHeight" type="xs:float" default="0.0">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">Line height in points. Since: Animate 2015?</xs:documentation>
+                                                            </xs:annotation>
+                                                        </xs:attribute>
                                                     </xs:complexType>
                                                 </xs:element>
                                             </xs:sequence>
@@ -1453,7 +1458,7 @@ elementFormDefault="qualified"
                         </xs:element>
                         <xs:element name="MatteColor" minOccurs="0">
                             <xs:annotation>
-                                <xs:documentation xml:lang="en">Background color used when caching as bitmap with opaque setting.</xs:documentation>
+                                <xs:documentation xml:lang="en">Background color used when caching as bitmap with opaque setting. Since: Flash CS5.5</xs:documentation>
                             </xs:annotation>
                             <xs:complexType>
                                 <xs:attribute name="color" type="tns:ColorType" use="optional" default="#ffffff"/>
@@ -1544,7 +1549,7 @@ elementFormDefault="qualified"
                     </xs:attribute>
                     <xs:attribute name="isVisible" type="xs:boolean" default="true">
                         <xs:annotation>
-                            <xs:documentation xml:lang="en">Visibility of the symbol instance.</xs:documentation>
+                            <xs:documentation xml:lang="en">Visibility of the symbol instance. Since: Flash CS5.5</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
                     <xs:attribute name="cacheAsBitmap" type="xs:boolean" default="false">
@@ -1554,7 +1559,7 @@ elementFormDefault="qualified"
                     </xs:attribute>
                     <xs:attribute name="bits32" type="xs:boolean" default="true">
                         <xs:annotation>
-                            <xs:documentation xml:lang="en">Set to false when the cache as bitmap is opaque.</xs:documentation>
+                            <xs:documentation xml:lang="en">Set to false when the cache as bitmap is opaque. Since: Flash CS5.5</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
                     <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>                    
@@ -3040,6 +3045,12 @@ elementFormDefault="qualified"
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="scripts" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">Unsure: Scripts associated with the document. Since: Animate 2020?</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType />
+                </xs:element>
                 <xs:element name="PrinterSettings">
                     <xs:annotation>
                         <xs:documentation xml:lang="en">Printer settings for the document.</xs:documentation>
@@ -3133,13 +3144,23 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en"><![CDATA[ 
                         Version of the XFL format.
                         <table>
-                            <thead><tr><th>XFL version</th><th>Flash/Animate Version</th></tr></thead>
+                            <thead><tr><th>XFL version</th><th>Year</th><th>Flash/Animate Version</th></tr></thead>
                             <tbody>
-                                <tr><td>2.0</td><td>Flash CS5</td></tr>
-                                <tr><td>2.1</td><td>Flash CS5.5</td></tr>
-                                <tr><td>2.2</td><td>Flash CS6</td></tr>
-                                <tr><td>2.4</td><td>Flash CC</td></tr>
-                                <tr><td>...</td><td>Animate...</td></tr>
+                                <tr><td>2.0</td><td>2010</td><td>Flash CS5</td></tr>
+                                <tr><td>2.1</td><td>2011</td><td>Flash CS5.5</td></tr>
+                                <tr><td>2.2</td><td>2012</td><td>Flash CS6</td></tr>
+                                <tr><td>2.4</td><td>2014</td><td>Flash CC</td></tr>
+                                <tr><td>2.6</td><td>2015</td><td>Animate CC 2015</td></tr>
+                                <tr><td>2.7</td><td>2016</td><td>Animate CC 2015.1</td></tr>
+                                <tr><td>2.9</td><td>2016</td><td>Animate CC 2017</td></tr>    
+                                <tr><td>2.96</td><td>2017</td><td>Animate CC 2018</td></tr>
+                                <tr><td>2.97</td><td>2018</td><td>Animate CC 2019</td></tr>
+                                <tr><td>2.97</td><td>2020</td><td>Animate 2020</td></tr>
+                                <tr><td>2.971</td><td>2020</td><td>Animate CC 2020.5</td></tr>
+                                <tr><td>2.98</td><td>2021</td><td>Animate 2021</td></tr>
+                                <tr><td>22.0</td><td>2022</td><td>Animate 2022</td></tr>
+                                <tr><td>23.0</td><td>2023</td><td>Animate 2023</td></tr>
+                                <tr><td>24.0</td><td>2024</td><td>Animate 2024</td></tr>
                             </tbody>
                         </table>
                         ]]>
@@ -3385,6 +3406,41 @@ elementFormDefault="qualified"
                         <xs:enumeration value="Must be close"/>
                         <xs:enumeration value="Normal"/>
                         <xs:enumeration value="Can be distant"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="vanishingPoint3DX" type="xs:float" use="optional" default="0.0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">X coordinate of the 3D vanishing point. Since: Animate 2023?</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="vanishingPoint3DY" type="xs:float" use="optional" default="0.0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Y coordinate of the 3D vanishing point. Since: Animate 2023?</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="vanishingPoint3DZ" type="xs:float" use="optional" default="0.0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Z coordinate of the 3D vanishing point. Since: Animate 2023?</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="filetypeGUID" use="optional">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">GUID of the file type. Since: Animate CC 2015?</xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="fileGUID" use="optional">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">GUID of the file. Since: Animate 2023?</xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:pattern value="[A-Fa-f0-9]{32}"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
