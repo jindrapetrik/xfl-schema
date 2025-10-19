@@ -19,7 +19,8 @@ elementFormDefault="qualified"
             <meta:releaseDate xmlns:meta="urn:metadata">yyyy-mm-dd</meta:releaseDate>
         </xs:appinfo>
     </xs:annotation>
-    <xs:simpleType name="tBitmapCompressionType">
+
+    <xs:simpleType name="BitmapCompressionTypeType">
         <xs:restriction base="xs:string">
             <xs:enumeration value="photo">
                 <xs:annotation>
@@ -33,7 +34,8 @@ elementFormDefault="qualified"
             </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>
-    <xs:simpleType name="tItemId">
+
+    <xs:simpleType name="ItemIdType">
         <xs:annotation>
             <xs:documentation xml:lang="en">
                 Unique item identifier.
@@ -46,7 +48,7 @@ elementFormDefault="qualified"
             <xs:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{8}"/>
         </xs:restriction>
     </xs:simpleType>
-    <xs:simpleType name="tColor">
+    <xs:simpleType name="ColorType">
         <xs:annotation>
             <xs:documentation xml:lang="en">
                 Color in hexadecimal format: #RRGGBB
@@ -57,7 +59,7 @@ elementFormDefault="qualified"
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:simpleType name="tSymbolType">
+    <xs:simpleType name="SymbolTypeType">
         <xs:restriction base="xs:string">
             <xs:enumeration value="movie clip"/>
             <xs:enumeration value="button"/>
@@ -66,7 +68,7 @@ elementFormDefault="qualified"
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:complexType name="tMatrix">
+    <xs:complexType name="MatrixType">
         <xs:annotation>
             <xs:documentation xml:lang="en">2d graphics placement matrix.</xs:documentation>
         </xs:annotation>
@@ -108,13 +110,13 @@ elementFormDefault="qualified"
         </xs:sequence>                                                                                                                        
     </xs:complexType>    
 
-    <xs:complexType name="tGradientEntry">
+    <xs:complexType name="GradientEntryType">
         <xs:annotation>
             <xs:documentation xml:lang="en">
                 One stop of the gradient.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="color" type="tns:tColor" use="optional" default="#000000"/>
+        <xs:attribute name="color" type="tns:ColorType" use="optional" default="#000000"/>
         <xs:attribute name="alpha" type="xs:float" use="optional" default="1.0"/>
         <xs:attribute name="ratio" default="0.0">
             <xs:annotation>
@@ -129,7 +131,7 @@ elementFormDefault="qualified"
         </xs:attribute>
     </xs:complexType>
         
-    <xs:attributeGroup name="GradientAttrs">
+    <xs:attributeGroup name="GradientAttributeGroup">
         <xs:annotation>
             <xs:documentation xml:lang="en">Common attributes for gradient definitions.</xs:documentation>
         </xs:annotation>
@@ -158,12 +160,12 @@ elementFormDefault="qualified"
         </xs:attribute>
     </xs:attributeGroup>
 
-    <xs:complexType name="tGradientFilter">
+    <xs:complexType name="GradientFilterType">
         <xs:annotation>
             <xs:documentation xml:lang="en">Common type for GradientGlowFilter and GradientBevelFilter</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="GradientEntry" type="tns:tGradientEntry" minOccurs="2" maxOccurs="unbounded"/>
+            <xs:element name="GradientEntry" type="tns:GradientEntryType" minOccurs="2" maxOccurs="unbounded"/>
         </xs:sequence>        
         <xs:attribute name="blurX" use="optional" default="5.0">
             <xs:annotation>
@@ -230,14 +232,14 @@ elementFormDefault="qualified"
         <xs:attributeGroup ref="tns:FilterAttrs"/>
     </xs:complexType>
 
-    <xs:group name="gFill">
+    <xs:group name="FillGroup">
         <xs:choice>
             <xs:element name="SolidColor">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Solid color fill.</xs:documentation>
                 </xs:annotation>
                 <xs:complexType>
-                    <xs:attribute name="color" type="tns:tColor" use="optional" default="#000000"/>
+                    <xs:attribute name="color" type="tns:ColorType" use="optional" default="#000000"/>
                     <xs:attribute name="alpha" type="xs:float" use="optional" default="1.0"/>
                 </xs:complexType>
             </xs:element>
@@ -247,18 +249,18 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:tMatrix" minOccurs="1" maxOccurs="1">
+                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="1" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the gradient.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
-                        <xs:element name="GradientEntry" type="tns:tGradientEntry" minOccurs="2" maxOccurs="unbounded">
+                        <xs:element name="GradientEntry" type="tns:GradientEntryType" minOccurs="2" maxOccurs="unbounded">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">One stop of the gradient.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
                     </xs:sequence>
-                    <xs:attributeGroup ref="tns:GradientAttrs"/>
+                    <xs:attributeGroup ref="tns:GradientAttributeGroup"/>
                     <xs:attribute name="focalPointRatio" use="optional" default="0.0">
                         <xs:annotation>
                             <xs:documentation xml:lang="en">Focal point ratio for the radial gradient.</xs:documentation>
@@ -275,18 +277,18 @@ elementFormDefault="qualified"
             <xs:element name="LinearGradient">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:tMatrix" minOccurs="1" maxOccurs="1">
+                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="1" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the gradient.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
-                        <xs:element name="GradientEntry" type="tns:tGradientEntry" minOccurs="2" maxOccurs="unbounded">
+                        <xs:element name="GradientEntry" type="tns:GradientEntryType" minOccurs="2" maxOccurs="unbounded">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">One stop of the gradient.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
                     </xs:sequence>
-                    <xs:attributeGroup ref="tns:GradientAttrs"/>
+                    <xs:attributeGroup ref="tns:GradientAttributeGroup"/>
                 </xs:complexType>
             </xs:element>
             <xs:element name="BitmapFill">
@@ -295,7 +297,7 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:tMatrix" minOccurs="1" maxOccurs="1">
+                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="1" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the bitmap fill.</xs:documentation>
                             </xs:annotation>
@@ -316,7 +318,7 @@ elementFormDefault="qualified"
         </xs:choice>    
     </xs:group>
 
-    <xs:group name="gStroke">
+    <xs:group name="StrokeGroup">
         <xs:annotation>
             <xs:documentation xml:lang="en">Different types of strokes.</xs:documentation>
         </xs:annotation>
@@ -327,7 +329,7 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:complexContent>
-                        <xs:extension base="tns:tStroke">
+                        <xs:extension base="tns:AbstractStrokeType">
                             <xs:attribute name="caps" default="round">
                                 <xs:annotation>
                                     <xs:documentation xml:lang="en">Type of line caps.</xs:documentation>
@@ -363,7 +365,7 @@ elementFormDefault="qualified"
             <xs:element name="DashedStroke">
                 <xs:complexType>
                     <xs:complexContent>
-                        <xs:extension base="tns:tStroke">
+                        <xs:extension base="tns:AbstractStrokeType">
                             <xs:attribute name="dash1" default="6.0">
                                 <xs:annotation>
                                     <xs:documentation xml:lang="en">Length of the dash segment in pts.</xs:documentation>
@@ -393,7 +395,7 @@ elementFormDefault="qualified"
             <xs:element name="DottedStroke">
                 <xs:complexType>
                     <xs:complexContent>
-                        <xs:extension base="tns:tStroke">
+                        <xs:extension base="tns:AbstractStrokeType">
                             <xs:attribute name="dotSpace" default="3.0">
                                 <xs:annotation>
                                     <xs:documentation xml:lang="en">Dot spacing in pts.</xs:documentation>
@@ -412,7 +414,7 @@ elementFormDefault="qualified"
             <xs:element name="RaggedStroke">
                 <xs:complexType>
                     <xs:complexContent>
-                        <xs:extension base="tns:tStroke">
+                        <xs:extension base="tns:AbstractStrokeType">
                             <xs:attribute name="pattern" default="simple">
                                 <xs:annotation>
                                     <xs:documentation xml:lang="en">Ragged stroke pattern.</xs:documentation>
@@ -462,7 +464,7 @@ elementFormDefault="qualified"
             <xs:element name="StippleStroke">
                 <xs:complexType>
                     <xs:complexContent>
-                        <xs:extension base="tns:tStroke">
+                        <xs:extension base="tns:AbstractStrokeType">
                             <xs:attribute name="dotSize" default="small">
                                 <xs:annotation>
                                     <xs:documentation xml:lang="en">Size of the stipple dots.</xs:documentation>
@@ -509,7 +511,7 @@ elementFormDefault="qualified"
                 <xs:element name="HatchedStroke">
                 <xs:complexType>
                     <xs:complexContent>
-                        <xs:extension base="tns:tStroke">
+                        <xs:extension base="tns:AbstractStrokeType">
                             <xs:attribute name="hatchThickness" default="hairline">
                                 <xs:annotation>
                                     <xs:documentation xml:lang="en">Thickness of the hatch lines.</xs:documentation>
@@ -595,14 +597,14 @@ elementFormDefault="qualified"
         </xs:choice>
     </xs:group>
 
-    <xs:complexType name="tStroke">
+    <xs:complexType name="AbstractStrokeType">
         <xs:sequence>
             <xs:element name="fill">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Determines how the stroke is filled.</xs:documentation>
                 </xs:annotation>
                 <xs:complexType>
-                    <xs:group ref="tns:gFill"/>
+                    <xs:group ref="tns:FillGroup"/>
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
@@ -667,13 +669,13 @@ elementFormDefault="qualified"
         </xs:attribute>
     </xs:complexType>
 
-    <xs:attributeGroup name="MediaAttrs">
+    <xs:attributeGroup name="MediaAttributeGroup">
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Name of the media item. Unique among all media items. Example: "myfile.png"</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="itemID" type="tns:tItemId" use="required">
+        <xs:attribute name="itemID" type="tns:ItemIdType" use="required">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Unique identifier of the media item. Example: "604e0a22-000002e1"</xs:documentation>
             </xs:annotation>
@@ -702,14 +704,14 @@ elementFormDefault="qualified"
     </xs:attributeGroup>
 
 
-    <xs:complexType name="tDOMText">
+    <xs:complexType name="AbstractDOMTextType">
         <xs:sequence>
-            <xs:element name="matrix" type="tns:tMatrix" minOccurs="0">
+            <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Transformation matrix for the text object.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="transformationPoint" type="tns:tPoint" minOccurs="0">
+            <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Transformation point for the text object.</xs:documentation>
                 </xs:annotation>
@@ -742,7 +744,7 @@ elementFormDefault="qualified"
                                                                 <xs:documentation xml:lang="en">Font face name.</xs:documentation>
                                                             </xs:annotation>
                                                         </xs:attribute>
-                                                        <xs:attribute name="fillColor" type="tns:tColor" default="#000000">
+                                                        <xs:attribute name="fillColor" type="tns:ColorType" default="#000000">
                                                             <xs:annotation>
                                                                 <xs:documentation xml:lang="en">Fill color of the text.</xs:documentation>
                                                             </xs:annotation>
@@ -902,10 +904,10 @@ elementFormDefault="qualified"
                 <xs:documentation xml:lang="en">Unsure: Specifies whether the text object includes outlines.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attributeGroup ref="tns:SelectableAttrs"/>
+        <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
     </xs:complexType>
 
-    <xs:attributeGroup name="SelectableAttrs">
+    <xs:attributeGroup name="SelectableAttributeGroup">
         <xs:attribute name="selected" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Specifies whether the element is selected in the flash editor.</xs:documentation>
@@ -913,7 +915,7 @@ elementFormDefault="qualified"
         </xs:attribute>
     </xs:attributeGroup>
 
-    <xs:attributeGroup name="TextNonStaticAttrs">
+    <xs:attributeGroup name="NonStaticTextAttributeGroup">
         <xs:annotation>
             <xs:documentation xml:lang="en">Attributes for not static texts.</xs:documentation>
         </xs:annotation>
@@ -952,7 +954,7 @@ elementFormDefault="qualified"
         </xs:attribute>
     </xs:attributeGroup>
 
-    <xs:attributeGroup name="TextNonInputAttrs">
+    <xs:attributeGroup name="NonInputTextAttributeGroup">
         <xs:annotation>
             <xs:documentation xml:lang="en">Attributes for non-input texts.</xs:documentation>
         </xs:annotation>
@@ -975,7 +977,7 @@ elementFormDefault="qualified"
         </xs:attribute>
     </xs:attributeGroup>
 
-    <xs:complexType name="tPoint">   
+    <xs:complexType name="PointType">   
         <xs:annotation>
             <xs:documentation xml:lang="en">Defines a point in 2D space.</xs:documentation>
         </xs:annotation>
@@ -1075,7 +1077,7 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Hide object mode.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attribute name="color" type="tns:tColor" default="#000000"/>
+                    <xs:attribute name="color" type="tns:ColorType" default="#000000"/>
                     <xs:attribute name="alpha" type="xs:float" use="optional" default="1.0"/>
 
                     <xs:attributeGroup ref="tns:FilterAttrs"/>
@@ -1159,8 +1161,8 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Number of times to apply the filter.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    
-                    <xs:attribute name="color" type="tns:tColor" default="#000000"/>
+
+                    <xs:attribute name="color" type="tns:ColorType" default="#000000"/>
                     <xs:attribute name="alpha" type="xs:float" use="optional" default="1.0"/>
 
                     <xs:attributeGroup ref="tns:FilterAttrs"/>
@@ -1230,7 +1232,7 @@ elementFormDefault="qualified"
                             </xs:restriction>
                         </xs:simpleType>
                     </xs:attribute>
-                    <xs:attribute name="shadowColor" type="tns:tColor" default="#000000">
+                    <xs:attribute name="shadowColor" type="tns:ColorType" default="#000000">
                         <xs:annotation>
                             <xs:documentation xml:lang="en">Color of the shadow portion of the bevel.</xs:documentation>
                         </xs:annotation>
@@ -1240,7 +1242,7 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Alpha transparency of the shadow portion of the bevel.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attribute name="highlightColor" type="tns:tColor" default="#ffffff">
+                    <xs:attribute name="highlightColor" type="tns:ColorType" default="#ffffff">
                         <xs:annotation>
                             <xs:documentation xml:lang="en">Color of the highlight portion of the bevel.</xs:documentation>
                         </xs:annotation>
@@ -1253,8 +1255,8 @@ elementFormDefault="qualified"
                     <xs:attributeGroup ref="tns:FilterAttrs"/>
                 </xs:complexType>
             </xs:element>            
-            <xs:element name="GradientGlowFilter" type="tns:tGradientFilter" />
-            <xs:element name="GradientBevelFilter" type="tns:tGradientFilter" />
+            <xs:element name="GradientGlowFilter" type="tns:GradientFilterType" />
+            <xs:element name="GradientBevelFilter" type="tns:GradientFilterType" />
             <xs:element name="AdjustColorFilter">
                 <xs:complexType>
                     <xs:attribute name="brightness" use="optional" default="0.0">
@@ -1308,7 +1310,7 @@ elementFormDefault="qualified"
         </xs:choice>
     </xs:complexType>
 
-    <xs:complexType name="tElementList">
+    <xs:complexType name="ElementListType">
         <xs:annotation>
             <xs:documentation xml:lang="en">List of elements on the display.</xs:documentation>
         </xs:annotation>
@@ -1319,17 +1321,17 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:tMatrix" minOccurs="0">
+                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the group.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
-                        <xs:element name="transformationPoint" type="tns:tPoint" minOccurs="0">
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation point for the group.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
-                        <xs:element name="members" type="tns:tElementList" minOccurs="0" maxOccurs="1">
+                        <xs:element name="members" type="tns:ElementListType" minOccurs="0" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Members of the group.</xs:documentation>
                             </xs:annotation>
@@ -1343,12 +1345,12 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:tMatrix" minOccurs="0">
+                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the symbol instance.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
-                        <xs:element name="transformationPoint" type="tns:tPoint" minOccurs="0">
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation point for the symbol instance.</xs:documentation>
                             </xs:annotation>
@@ -1428,7 +1430,7 @@ elementFormDefault="qualified"
                                                     </xs:restriction>
                                                 </xs:simpleType>
                                             </xs:attribute>
-                                            <xs:attribute name="tintColor" type="tns:tColor" use="optional">
+                                            <xs:attribute name="tintColor" type="tns:ColorType" use="optional">
                                                 <xs:annotation>
                                                     <xs:documentation xml:lang="en">Tint color value.</xs:documentation>
                                                 </xs:annotation>
@@ -1454,7 +1456,7 @@ elementFormDefault="qualified"
                                 <xs:documentation xml:lang="en">Background color used when caching as bitmap with opaque setting.</xs:documentation>
                             </xs:annotation>
                             <xs:complexType>
-                                <xs:attribute name="color" type="tns:tColor" use="optional" default="#ffffff"/>
+                                <xs:attribute name="color" type="tns:ColorType" use="optional" default="#ffffff"/>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
@@ -1463,7 +1465,7 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Name of the symbol in the library.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attribute name="symbolType" type="tns:tSymbolType" use="optional" default="movie clip">
+                    <xs:attribute name="symbolType" type="tns:SymbolTypeType" use="optional" default="movie clip">
                         <xs:annotation>
                             <xs:documentation xml:lang="en">Type of the symbol instance.</xs:documentation>
                         </xs:annotation>
@@ -1555,18 +1557,18 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Set to false when the cache as bitmap is opaque.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attributeGroup ref="tns:SelectableAttrs"/>                    
+                    <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>                    
                 </xs:complexType>
             </xs:element>
             <xs:element name="DOMBitmapInstance">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:tMatrix">
+                        <xs:element name="matrix" type="tns:MatrixType">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the bitmap instance.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
-                        <xs:element name="transformationPoint" type="tns:tPoint" minOccurs="0">
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation point for the bitmap instance.</xs:documentation>
                             </xs:annotation>
@@ -1577,7 +1579,7 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Name of the bitmap in the library.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attributeGroup ref="tns:SelectableAttrs"/>
+                    <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
                 </xs:complexType>
             </xs:element>
             <xs:element name="DOMStaticText">
@@ -1586,8 +1588,8 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:complexContent>
-                        <xs:extension base="tns:tDOMText">                                                  
-                            <xs:attributeGroup ref="tns:TextNonInputAttrs"/>
+                        <xs:extension base="tns:AbstractDOMTextType">                                                  
+                            <xs:attributeGroup ref="tns:NonInputTextAttributeGroup"/>
                         </xs:extension>
                     </xs:complexContent>
                 </xs:complexType>
@@ -1598,9 +1600,9 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:complexContent>
-                        <xs:extension base="tns:tDOMText">                                                  
-                            <xs:attributeGroup ref="tns:TextNonInputAttrs"/>
-                            <xs:attributeGroup ref="tns:TextNonStaticAttrs"/>
+                        <xs:extension base="tns:AbstractDOMTextType">                                                  
+                            <xs:attributeGroup ref="tns:NonInputTextAttributeGroup"/>
+                            <xs:attributeGroup ref="tns:NonStaticTextAttributeGroup"/>
                         </xs:extension>
                     </xs:complexContent>
                 </xs:complexType>
@@ -1611,8 +1613,8 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:complexContent>
-                        <xs:extension base="tns:tDOMText">                                                  
-                            <xs:attributeGroup ref="tns:TextNonStaticAttrs"/>                                                                                                                                                                                      
+                        <xs:extension base="tns:AbstractDOMTextType">                                                  
+                            <xs:attributeGroup ref="tns:NonStaticTextAttributeGroup"/>                                                                                                                                                                                      
                             <xs:attribute name="maxCharacters" type="xs:nonNegativeInteger" use="optional">
                                 <xs:annotation>
                                     <xs:documentation xml:lang="en">Maximum number of characters allowed in the input text field.</xs:documentation>
@@ -1629,12 +1631,12 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:tMatrix" minOccurs="0">
+                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the shape.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
-                        <xs:element name="transformationPoint" type="tns:tPoint" minOccurs="0">
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation point for the shape.</xs:documentation>
                             </xs:annotation>
@@ -1647,7 +1649,7 @@ elementFormDefault="qualified"
                                 <xs:sequence>
                                     <xs:element name="FillStyle" maxOccurs="unbounded">
                                         <xs:complexType>
-                                            <xs:group ref="tns:gFill"/>
+                                            <xs:group ref="tns:FillGroup"/>
                                             <xs:attribute name="index" type="xs:positiveInteger" use="required">
                                                 <xs:annotation>
                                                     <xs:documentation xml:lang="en">Index of the fill style.</xs:documentation>
@@ -1666,7 +1668,7 @@ elementFormDefault="qualified"
                                 <xs:sequence>
                                     <xs:element name="StrokeStyle" maxOccurs="unbounded">                                                                                                                            
                                     <xs:complexType>
-                                            <xs:group ref="tns:gStroke"></xs:group>
+                                            <xs:group ref="tns:StrokeGroup"></xs:group>
                                             <xs:attribute name="index" type="xs:positiveInteger" use="required">
                                                 <xs:annotation>
                                                     <xs:documentation xml:lang="en">Index of the stroke style.</xs:documentation>
@@ -1726,19 +1728,19 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Unsure: Whether the shape is a floating shape.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attributeGroup ref="tns:SelectableAttrs"/>                                                                                                    
+                    <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>                                                                                                    
                 </xs:complexType>
             </xs:element>
 
             <xs:element name="DOMComponentInstance">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:tMatrix" minOccurs="0">
+                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the component instance.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
-                        <xs:element name="transformationPoint" type="tns:tPoint" minOccurs="0">
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation point for the component instance.</xs:documentation>
                             </xs:annotation>
@@ -1789,7 +1791,7 @@ elementFormDefault="qualified"
         </xs:choice>
     </xs:complexType>
 
-    <xs:complexType name="tDOMFrame">
+    <xs:complexType name="DOMFrameType">
         
         <xs:sequence>            
         <xs:element name="Actionscript" minOccurs="0" maxOccurs="1">
@@ -2007,8 +2009,7 @@ elementFormDefault="qualified"
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="elements" maxOccurs="1" type="tns:tElementList" />
-
+            <xs:element name="elements" maxOccurs="1" type="tns:ElementListType" />
         </xs:sequence>
         
         <xs:attribute name="index" type="xs:integer" use="required">
@@ -2237,7 +2238,7 @@ elementFormDefault="qualified"
         </xs:attribute>
     </xs:complexType>
     
-    <xs:complexType name="tDOMTimeline">
+    <xs:complexType name="DOMTimelineType">
         <xs:sequence>
             <xs:element name="layers">
                 <xs:annotation>
@@ -2257,7 +2258,7 @@ elementFormDefault="qualified"
                                         </xs:annotation>
                                         <xs:complexType>
                                             <xs:sequence>
-                                                <xs:element name="DOMFrame" minOccurs="0" maxOccurs="unbounded" type="tns:tDOMFrame">
+                                                <xs:element name="DOMFrame" minOccurs="0" maxOccurs="unbounded" type="tns:DOMFrameType">
                                                     <xs:annotation>
                                                         <xs:documentation xml:lang="en">Frame in the layer.</xs:documentation>
                                                     </xs:annotation>
@@ -2272,7 +2273,7 @@ elementFormDefault="qualified"
                                         <xs:documentation xml:lang="en">Name of the layer.</xs:documentation>
                                     </xs:annotation>
                                 </xs:attribute>
-                                <xs:attribute name="color" type="tns:tColor" use="required">
+                                <xs:attribute name="color" type="tns:ColorType" use="required">
                                     <xs:annotation>
                                         <xs:documentation xml:lang="en">Color associated with the layer.</xs:documentation>
                                     </xs:annotation>
@@ -2370,6 +2371,79 @@ elementFormDefault="qualified"
         </xs:attribute>
     </xs:complexType>
 
+
+    
+    <xs:attributeGroup name="LinkageAttributeGroup">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">
+                Common linkage attributes for library items.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="linkageExportForAS" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    Indicates whether the item is exported for ActionScript.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="linkageClassName" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    The ActionScript class name associated with the item.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="linkageExportInFirstFrame" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    Indicates whether the item is exported in the first frame.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="linkageBaseClass" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    The base class for the ActionScript class associated with the item.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="linkageExportForRS" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    Indicates whether the item is exported for runtime sharing.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="linkageURL" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    The URL for runtime sharing of the item.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="linkageImportForRS" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    Indicates whether the item is imported for runtime sharing.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="sourceLibraryItemHRef" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    The HRef for the source library item.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="linkageIdentifier" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    The unique identifier for the linkage.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+
     <xs:element name="DOMDocument">
         <xs:annotation>
             <xs:documentation xml:lang="en">Main document element.</xs:documentation>
@@ -2389,7 +2463,7 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Name of the folder. For subfolders, use a slash (/) in the path. Example: "myFolder" or "mySub/myFolder".</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="itemID" type="tns:tItemId" use="required">
+                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="required">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Unique identifier for the folder.</xs:documentation>
                                         </xs:annotation>
@@ -2420,7 +2494,7 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Name of the font. Unique identifier for the font.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="itemID" type="tns:tItemId" use="required">
+                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="required">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Unique identifier for the font.</xs:documentation>
                                         </xs:annotation>
@@ -2460,7 +2534,7 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Specific characters that are embedded for the font. Just the characters themselves, without any separators.</xs:documentation>
                                         </xs:annotation>    
                                     </xs:attribute>
-                                    <xs:attributeGroup ref="tns:LinkageAttrs"></xs:attributeGroup>
+                                    <xs:attributeGroup ref="tns:LinkageAttributeGroup"></xs:attributeGroup>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
@@ -2471,18 +2545,18 @@ elementFormDefault="qualified"
                         <xs:choice minOccurs="0" maxOccurs="unbounded">
                             <xs:element name="DOMBitmapItem">
                                 <xs:complexType>
-                                    <xs:attributeGroup ref="tns:MediaAttrs"/>
+                                    <xs:attributeGroup ref="tns:MediaAttributeGroup"/>
                                     <xs:attribute name="useImportedJPEGData" type="xs:boolean" use="optional" default="true">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Indicates whether to use the imported JPEG data for the bitmap or recompress it.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="compressionType" type="tns:tBitmapCompressionType" use="optional" default="photo">
+                                    <xs:attribute name="compressionType" type="tns:BitmapCompressionTypeType" use="optional" default="photo">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Compression type used for the bitmap.</xs:documentation>
                                         </xs:annotation>
-                                    </xs:attribute> 
-                                    <xs:attribute name="originalCompressionType" type="tns:tBitmapCompressionType" use="optional" default="photo">
+                                    </xs:attribute>
+                                    <xs:attribute name="originalCompressionType" type="tns:BitmapCompressionTypeType" use="optional" default="photo">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Original compression type of the bitmap when it was imported.</xs:documentation>
                                         </xs:annotation>
@@ -2538,12 +2612,12 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Indicates whether the bitmap is in JPEG format.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attributeGroup ref="tns:LinkageAttrs"></xs:attributeGroup>
+                                    <xs:attributeGroup ref="tns:LinkageAttributeGroup"></xs:attributeGroup>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="DOMVideoItem">
                                 <xs:complexType>
-                                    <xs:attributeGroup ref="tns:MediaAttrs"/>                                    
+                                    <xs:attributeGroup ref="tns:MediaAttributeGroup"/>
                                     <xs:attribute name="videoDataHRef" type="xs:string" use="required">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Name of the file inside bin folder. Example: "M 6 1617368920.dat".</xs:documentation>
@@ -2597,7 +2671,7 @@ elementFormDefault="qualified"
                             </xs:element>
                             <xs:element name="DOMSoundItem">
                                 <xs:complexType>
-                                    <xs:attributeGroup ref="tns:MediaAttrs"/>
+                                    <xs:attributeGroup ref="tns:MediaAttributeGroup"/>
                                     <xs:attribute name="href" type="xs:string" use="required">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Path to the sound file. Example: "sound.mp3"</xs:documentation>
@@ -2685,7 +2759,7 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Number of samples in the cached sound.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attributeGroup ref="tns:LinkageAttrs"></xs:attributeGroup>
+                                    <xs:attributeGroup ref="tns:LinkageAttributeGroup"></xs:attributeGroup>
                                 </xs:complexType>
                             </xs:element>
                             <xs:element name="DOMCompiledClipItem">
@@ -2721,7 +2795,7 @@ elementFormDefault="qualified"
                                         </xs:element>
                                     </xs:sequence>
                                     <xs:attribute name="name" type="xs:string" use="required"/>
-                                    <xs:attribute name="itemID" type="tns:tItemId" use="required"/>
+                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="required"/>
                                     <xs:attribute name="linkageExportForAS" type="xs:boolean" use="optional" default="false"/>
                                     <xs:attribute name="linkageClassName" type="xs:string" use="optional"/>
                                     <xs:attribute name="sourceLastImported" type="xs:integer" use="optional"/>
@@ -2770,7 +2844,7 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Unsure: Indicates whether to load the symbol immediately when the document is opened.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="itemID" type="tns:tItemId" use="required">
+                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="required">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Unique identifier for the symbol.</xs:documentation>
                                         </xs:annotation>
@@ -2791,7 +2865,7 @@ elementFormDefault="qualified"
                     </xs:annotation>
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="DOMTimeline" minOccurs="1" maxOccurs="unbounded" type="tns:tDOMTimeline" />
+                            <xs:element name="DOMTimeline" minOccurs="1" maxOccurs="unbounded" type="tns:DOMTimelineType" />
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
@@ -2868,7 +2942,7 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">Height of the document.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="backgroundColor" type="tns:tColor" default="#ffffff">
+            <xs:attribute name="backgroundColor" type="tns:ColorType" default="#ffffff">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Background color of the document.</xs:documentation>
                 </xs:annotation>
@@ -3031,7 +3105,7 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">Indicates if the ruler is visible.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="gridColor" type="tns:tColor" default="#949494">
+            <xs:attribute name="gridColor" type="tns:ColorType" default="#949494">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Color of the grid.</xs:documentation>
                 </xs:annotation>
@@ -3128,78 +3202,11 @@ elementFormDefault="qualified"
         </xs:complexType>
     </xs:element>
     
-    <xs:attributeGroup name="LinkageAttrs">
-        <xs:annotation>
-            <xs:documentation xml:lang="en">
-                Common linkage attributes for library items.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="linkageExportForAS" type="xs:boolean" default="false">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    Indicates whether the item is exported for ActionScript.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="linkageClassName" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    The ActionScript class name associated with the item.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="linkageExportInFirstFrame" type="xs:boolean" default="true">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    Indicates whether the item is exported in the first frame.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="linkageBaseClass" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    The base class for the ActionScript class associated with the item.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="linkageExportForRS" type="xs:boolean" default="false">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    Indicates whether the item is exported for runtime sharing.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="linkageURL" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    The URL for runtime sharing of the item.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="linkageImportForRS" type="xs:boolean" default="false">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    Indicates whether the item is imported for runtime sharing.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="sourceLibraryItemHRef" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    The HRef for the source library item.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="linkageIdentifier" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    The unique identifier for the linkage.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:attributeGroup>
 
     <xs:element name="DOMSymbolItem">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Represents a symbol in the DOM.</xs:documentation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="timeline">
@@ -3208,7 +3215,7 @@ elementFormDefault="qualified"
                     </xs:annotation>
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="DOMTimeline" type="tns:tDOMTimeline">
+                            <xs:element name="DOMTimeline" type="tns:DOMTimelineType">
                                 <xs:annotation>
                                     <xs:documentation xml:lang="en">Timeline data for the symbol.</xs:documentation>
                                 </xs:annotation>
@@ -3222,12 +3229,12 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">Name of the symbol.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="itemID" type="tns:tItemId" use="required">
+            <xs:attribute name="itemID" type="tns:ItemIdType" use="required">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Unique identifier for the symbol.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="symbolType" type="tns:tSymbolType" use="optional" default="movie clip">
+            <xs:attribute name="symbolType" type="tns:SymbolTypeType" use="optional" default="movie clip">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Type of the symbol.</xs:documentation>
                 </xs:annotation>
@@ -3257,7 +3264,7 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">Bottom boundary of the 9-slice scaling grid.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attributeGroup ref="tns:LinkageAttrs"></xs:attributeGroup>
+            <xs:attributeGroup ref="tns:LinkageAttributeGroup"></xs:attributeGroup>
             <xs:attribute name="lastUniqueIdentifier" type="xs:nonNegativeInteger" use="optional">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Last unique identifier for the symbol.</xs:documentation>
