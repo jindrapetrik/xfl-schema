@@ -7,7 +7,7 @@ elementFormDefault="qualified"
     <xs:annotation>
         <xs:documentation xml:lang="en"><![CDATA[
             <h1>XFL Schema</h1>
-            <p>Schema describing XFL files used by Adobe Flash Professional CS5 and later.</p>            
+            <p>Schema describing XFL files used by Adobe Flash Professional CS5 and later.</p>
             <p>Version: <b>Unreleased</b>, release date (yyyy-mm-dd)</p>
             <p>Author: Jindra Petrik (JPEXS)</p>
             <p>Contact: jindra.petrik@gmail.com</p>
@@ -675,7 +675,7 @@ elementFormDefault="qualified"
                 <xs:documentation xml:lang="en">Name of the media item. Unique among all media items. Example: "myfile.png"</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="itemID" type="tns:ItemIdType" use="required">
+        <xs:attribute name="itemID" type="tns:ItemIdType" use="optional">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Unique identifier of the media item. Example: "604e0a22-000002e1"</xs:documentation>
             </xs:annotation>
@@ -1563,7 +1563,7 @@ elementFormDefault="qualified"
             <xs:element name="DOMBitmapInstance">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixType">
+                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the bitmap instance.</xs:documentation>
                             </xs:annotation>
@@ -1577,6 +1577,16 @@ elementFormDefault="qualified"
                     <xs:attribute name="libraryItemName" type="xs:string" use="required">
                         <xs:annotation>
                             <xs:documentation xml:lang="en">Name of the bitmap in the library.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="name" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Name of the bitmap instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="referenceID" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Unsure: Reference ID for the bitmap instance.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
                     <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
@@ -2463,7 +2473,7 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Name of the folder. For subfolders, use a slash (/) in the path. Example: "myFolder" or "mySub/myFolder".</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="required">
+                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="optional">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Unique identifier for the folder.</xs:documentation>
                                         </xs:annotation>
@@ -2494,7 +2504,7 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Name of the font. Unique identifier for the font.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="required">
+                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="optional">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Unique identifier for the font.</xs:documentation>
                                         </xs:annotation>
@@ -2795,7 +2805,7 @@ elementFormDefault="qualified"
                                         </xs:element>
                                     </xs:sequence>
                                     <xs:attribute name="name" type="xs:string" use="required"/>
-                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="required"/>
+                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="optional"/>
                                     <xs:attribute name="linkageExportForAS" type="xs:boolean" use="optional" default="false"/>
                                     <xs:attribute name="linkageClassName" type="xs:string" use="optional"/>
                                     <xs:attribute name="sourceLastImported" type="xs:integer" use="optional"/>
@@ -2844,12 +2854,12 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Unsure: Indicates whether to load the symbol immediately when the document is opened.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="required">
+                                    <xs:attribute name="itemID" type="tns:ItemIdType" use="optional">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Unique identifier for the symbol.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="lastModified" type="xs:integer" use="required">
+                                    <xs:attribute name="lastModified" type="xs:integer" use="optional">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Timestamp of the last modification of the symbol.</xs:documentation>
                                         </xs:annotation>
@@ -2866,6 +2876,121 @@ elementFormDefault="qualified"
                     <xs:complexType>
                         <xs:sequence>
                             <xs:element name="DOMTimeline" minOccurs="1" maxOccurs="unbounded" type="tns:DOMTimelineType" />
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="swatchLists" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">List of color swatch lists in the document.</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="swatchList" minOccurs="0" maxOccurs="unbounded">
+                                <xs:annotation>
+                                    <xs:documentation xml:lang="en">A list of color swatches.</xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="swatches">
+                                            <xs:annotation>
+                                                <xs:documentation xml:lang="en">Container for swatch items.</xs:documentation>
+                                            </xs:annotation>
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="SolidSwatchItem" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:annotation>
+                                                            <xs:documentation xml:lang="en">A solid color swatch item.</xs:documentation>
+                                                        </xs:annotation>
+                                                        <xs:complexType>
+                                                            <xs:attribute name="color" type="tns:ColorType" use="optional" default="#000000">
+                                                                <xs:annotation>
+                                                                    <xs:documentation xml:lang="en">Color of the swatch.</xs:documentation>
+                                                                </xs:annotation>
+                                                            </xs:attribute>
+                                                            <xs:attribute name="alpha" type="xs:float" use="optional" default="1.0">
+                                                                <xs:annotation>
+                                                                    <xs:documentation xml:lang="en">Alpha (opacity) of the swatch color.</xs:documentation>
+                                                                </xs:annotation>
+                                                            </xs:attribute>
+                                                            <xs:attribute name="hue" use="optional" default="0">
+                                                                <xs:annotation>
+                                                                    <xs:documentation xml:lang="en">Hue adjustment for the swatch color.</xs:documentation>
+                                                                </xs:annotation>
+                                                                <xs:simpleType>
+                                                                    <xs:restriction base="xs:integer">
+                                                                        <xs:minInclusive value="0"/>
+                                                                        <xs:maxInclusive value="240"/>
+                                                                    </xs:restriction>
+                                                                </xs:simpleType>
+                                                            </xs:attribute>
+                                                            <xs:attribute name="saturation" use="optional" default="0">
+                                                                <xs:annotation>
+                                                                    <xs:documentation xml:lang="en">Saturation adjustment for the swatch color.</xs:documentation>
+                                                                </xs:annotation>
+                                                                <xs:simpleType>
+                                                                    <xs:restriction base="xs:integer">
+                                                                        <xs:minInclusive value="0"/>
+                                                                        <xs:maxInclusive value="240"/>
+                                                                    </xs:restriction>
+                                                                </xs:simpleType>
+                                                            </xs:attribute>
+                                                            <xs:attribute name="brightness" use="optional" default="0">
+                                                                <xs:annotation>
+                                                                    <xs:documentation xml:lang="en">Brightness adjustment for the swatch color.</xs:documentation>
+                                                                </xs:annotation>
+                                                                <xs:simpleType>
+                                                                    <xs:restriction base="xs:integer">
+                                                                        <xs:minInclusive value="0"/>
+                                                                        <xs:maxInclusive value="240"/>
+                                                                    </xs:restriction>
+                                                                </xs:simpleType>
+                                                            </xs:attribute>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        
+                                    </xs:sequence>                                    
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="extendedSwatchLists" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">Extended swatch lists for the document.</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="swatchList">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="swatches">
+                                            <xs:complexType>
+                                                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:element name="LinearGradientSwatchItem">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="GradientEntry" type="tns:GradientEntryType" minOccurs="2" maxOccurs="unbounded"/>
+                                                            </xs:sequence>
+                                                            <xs:attributeGroup ref="tns:GradientAttributeGroup"></xs:attributeGroup>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="RadialGradientSwatchItem">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="GradientEntry" type="tns:GradientEntryType" minOccurs="2" maxOccurs="unbounded"/>
+                                                            </xs:sequence>
+                                                            <xs:attributeGroup ref="tns:GradientAttributeGroup"></xs:attributeGroup>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:choice>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
@@ -2959,7 +3084,20 @@ elementFormDefault="qualified"
             </xs:attribute>
             <xs:attribute name="xflVersion" type="xs:string" use="required">
                 <xs:annotation>
-                    <xs:documentation xml:lang="en">Version of the XFL format.</xs:documentation>
+                    <xs:documentation xml:lang="en"><![CDATA[ 
+                        Version of the XFL format.
+                        <table>
+                            <thead><tr><th>XFL version</th><th>Flash/Animate Version</th></tr></thead>
+                            <tbody>
+                                <tr><td>2.0</td><td>Flash CS5</td></tr>
+                                <tr><td>2.1</td><td>Flash CS5.5</td></tr>
+                                <tr><td>2.2</td><td>Flash CS6</td></tr>
+                                <tr><td>2.4</td><td>Flash CC</td></tr>
+                                <tr><td>...</td><td>Animate...</td></tr>
+                            </tbody>
+                        </table>
+                        ]]>
+                    </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="creatorInfo" type="xs:string" use="optional">
@@ -3229,7 +3367,7 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">Name of the symbol.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="itemID" type="tns:ItemIdType" use="required">
+            <xs:attribute name="itemID" type="tns:ItemIdType" use="optional">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Unique identifier for the symbol.</xs:documentation>
                 </xs:annotation>
@@ -3239,7 +3377,7 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">Type of the symbol.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="lastModified" type="xs:integer" use="required">
+            <xs:attribute name="lastModified" type="xs:integer" use="optional">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Timestamp of the last modification of the symbol.</xs:documentation>
                 </xs:annotation>
