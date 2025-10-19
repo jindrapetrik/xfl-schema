@@ -1315,6 +1315,16 @@ elementFormDefault="qualified"
         </xs:choice>
     </xs:complexType>
 
+
+    <xs:simpleType name="Matrix3DType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">3D transformation matrix type. Example: "1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 1"</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="([-+]?\d*\.?\d+([eE][-+]?\d+)?\s+){15}([-+]?\d*\.?\d+([eE][-+]?\d+)?)"/>
+        </xs:restriction>
+    </xs:simpleType>
+
     <xs:complexType name="ElementListType">
         <xs:annotation>
             <xs:documentation xml:lang="en">List of elements on the display.</xs:documentation>
@@ -1560,6 +1570,26 @@ elementFormDefault="qualified"
                     <xs:attribute name="bits32" type="xs:boolean" default="true">
                         <xs:annotation>
                             <xs:documentation xml:lang="en">Set to false when the cache as bitmap is opaque. Since: Flash CS5.5</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="matrix3D" type="tns:Matrix3DType" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">3D transformation matrix for the symbol instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="rotationX" type="xs:float" use="optional" default="0.0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Rotation around the X axis in degrees.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="rotationY" type="xs:float" use="optional" default="0.0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Rotation around the Y axis in degrees.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="rotationZ" type="xs:float" use="optional" default="0.0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Rotation around the Z axis in degrees.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
                     <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>                    
@@ -3202,11 +3232,6 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">Unsure: Width of the timeline labels.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="viewAngle3D" type="xs:float" use="optional">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">Unsure: 3D view angle of the document.</xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
             <xs:attribute name="autoSaveEnabled" type="xs:boolean" default="false">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Indicates if auto-save is enabled.</xs:documentation>
@@ -3409,19 +3434,19 @@ elementFormDefault="qualified"
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
+            <xs:attribute name="viewAngle3D" type="xs:float" use="optional">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">3D view angle of the document.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>            
             <xs:attribute name="vanishingPoint3DX" type="xs:float" use="optional" default="0.0">
                 <xs:annotation>
-                    <xs:documentation xml:lang="en">X coordinate of the 3D vanishing point. Since: Animate 2023?</xs:documentation>
+                    <xs:documentation xml:lang="en">X coordinate of the 3D vanishing point.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="vanishingPoint3DY" type="xs:float" use="optional" default="0.0">
                 <xs:annotation>
-                    <xs:documentation xml:lang="en">Y coordinate of the 3D vanishing point. Since: Animate 2023?</xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="vanishingPoint3DZ" type="xs:float" use="optional" default="0.0">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">Z coordinate of the 3D vanishing point. Since: Animate 2023?</xs:documentation>
+                    <xs:documentation xml:lang="en">Y coordinate of the 3D vanishing point.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="filetypeGUID" use="optional">
