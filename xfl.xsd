@@ -12,6 +12,7 @@ elementFormDefault="qualified"
                 <p>Version: <b>0.0.2</b>, release date (2025-10-20)</p>
                 <p>Author: Jindra Petrik (JPEXS)</p>
                 <p>Contact: jindra.petrik@gmail.com</p>
+                <p>License: CC-BY-4.0</p>
                 <p>WARNING: Schema might be incomplete or inaccurate.</p>
                 <p>Parts where I really don't know are marked with "Unsure" prefix.</p>
                 <h2>Changelog</h2>
