@@ -2,7 +2,7 @@
 Schema describing XFL files used by Adobe Flash Professional CS5 and later.
 
 ## Download
-The file with scheme definition is [xfl.xsd].
+The file with scheme definition is [xfl.xsd](xfl.xsd).
 
 ## HTML documentation
 HTML version of documentation is autogerated here: [xfl.html](https://jindrapetrik.github.io/xfl-schema/xfl.html)
