@@ -8,17 +8,45 @@ elementFormDefault="qualified"
         <xs:documentation xml:lang="en"><![CDATA[
             <h1>XFL Schema</h1>
             <p>Schema describing XFL files used by Adobe Flash Professional CS5 and later.</p>
-            <p>Version: <b>0.0.1</b>, release date (2025-10-19)</p>
+            <p>Version: <b>0.0.2</b>, release date (2025-10-20)</p>
             <p>Author: Jindra Petrik (JPEXS)</p>
             <p>Contact: jindra.petrik@gmail.com</p>
             <p>WARNING: Schema might be incomplete or inaccurate.</p>
             <p>Parts where I really don't know are marked with "Unsure" prefix.</p>
+            <h2>Changelog</h2>
+            <ul>
+                <li><b>2025-10-20 v0.0.2</b>: Inverse Kinematics (Bone tool).</li>
+                <li><b>2025-10-19 v0.0.1</b>: Initial version.</li>
+            </ul>
         ]]></xs:documentation>
         <xs:appinfo>
             <meta:version xmlns:meta="urn:metadata">0.0.1</meta:version>
             <meta:releaseDate xmlns:meta="urn:metadata">2025-10-19</meta:releaseDate>
         </xs:appinfo>
     </xs:annotation>
+
+    <xs:simpleType name="UuidType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">
+                Universally Unique Identifier (UUID) in standard 8-4-4-4-12 hexadecimal format.
+                Example: "550e8400-e29b-41d4-a716-446655440000"
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ReferenceType">
+        <xs:union memberTypes="tns:UuidType">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:length value="0"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:union>
+    </xs:simpleType>
+
 
     <xs:simpleType name="BitmapCompressionTypeType">
         <xs:restriction base="xs:string">
@@ -70,42 +98,49 @@ elementFormDefault="qualified"
 
     <xs:complexType name="MatrixType">
         <xs:annotation>
+            <xs:documentation xml:lang="en">2D transformation matrix.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="a" type="xs:float" use="optional" default="1">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Scaling in x direction.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="b" type="xs:float" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Skewing in y direction.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="c" type="xs:float" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Skewing in x direction.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="d" type="xs:float" use="optional" default="1">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Scaling in y direction.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="tx" type="xs:float" use="optional" default="0">   
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Translation in x direction.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="ty" type="xs:float" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Translation in y direction.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="MatrixContainerType">
+        <xs:annotation>
             <xs:documentation xml:lang="en">2d graphics placement matrix.</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="Matrix">
-                <xs:complexType>
-                    <xs:attribute name="a" type="xs:float" use="optional" default="1">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Scaling in x direction.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="b" type="xs:float" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Skewing in y direction.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="c" type="xs:float" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Skewing in x direction.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="d" type="xs:float" use="optional" default="1">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Scaling in y direction.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="tx" type="xs:float" use="optional" default="0">   
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Translation in x direction.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="ty" type="xs:float" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Translation in y direction.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:complexType>
+            <xs:element name="Matrix" type="tns:MatrixType">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">2D transformation matrix.</xs:documentation>
+                </xs:annotation>
             </xs:element>                                                                                                                                                                                                                                                   
         </xs:sequence>                                                                                                                        
     </xs:complexType>    
@@ -249,7 +284,7 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="1" maxOccurs="1">
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="1" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the gradient.</xs:documentation>
                             </xs:annotation>
@@ -277,7 +312,7 @@ elementFormDefault="qualified"
             <xs:element name="LinearGradient">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="1" maxOccurs="1">
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="1" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the gradient.</xs:documentation>
                             </xs:annotation>
@@ -297,7 +332,7 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="1" maxOccurs="1">
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="1" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the bitmap fill.</xs:documentation>
                             </xs:annotation>
@@ -706,7 +741,7 @@ elementFormDefault="qualified"
 
     <xs:complexType name="AbstractDOMTextType">
         <xs:sequence>
-            <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
+            <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Transformation matrix for the text object.</xs:documentation>
                 </xs:annotation>
@@ -1336,7 +1371,7 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the group.</xs:documentation>
                             </xs:annotation>
@@ -1360,7 +1395,7 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the symbol instance.</xs:documentation>
                             </xs:annotation>
@@ -1592,13 +1627,18 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Rotation around the Z axis in degrees.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
+                    <xs:attribute name="referenceID" type="tns:ReferenceType" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Reference ID for the bitmap instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
                     <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>                    
                 </xs:complexType>
             </xs:element>
             <xs:element name="DOMBitmapInstance">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the bitmap instance.</xs:documentation>
                             </xs:annotation>
@@ -1619,9 +1659,9 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Name of the bitmap instance.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attribute name="referenceID" type="xs:string" use="optional">
+                    <xs:attribute name="referenceID" type="tns:ReferenceType" use="optional">
                         <xs:annotation>
-                            <xs:documentation xml:lang="en">Unsure: Reference ID for the bitmap instance.</xs:documentation>
+                            <xs:documentation xml:lang="en">Reference ID for the bitmap instance.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
                     <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
@@ -1630,7 +1670,7 @@ elementFormDefault="qualified"
             <xs:element name="DOMVideoInstance">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the video instance.</xs:documentation>
                             </xs:annotation>
@@ -1722,7 +1762,7 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the shape.</xs:documentation>
                             </xs:annotation>
@@ -1826,7 +1866,7 @@ elementFormDefault="qualified"
             <xs:element name="DOMComponentInstance">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixType" minOccurs="0">
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Transformation matrix for the component instance.</xs:documentation>
                             </xs:annotation>
@@ -1880,6 +1920,173 @@ elementFormDefault="qualified"
                 </xs:complexType>
             </xs:element>
         </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="IKChildNodeType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Inverse kinematics(IK) bone.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="states">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="State" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:attribute name="duration" type="xs:integer" use="required">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Duration of the state in frames.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="x" type="xs:float" use="required">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">X coordinate of the bone in this state.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="y" type="xs:float" use="required">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Y coordinate of the bone in this state.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="angle" type="xs:float" use="optional" default="0.0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Angle of the bone in this state.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="childNodes" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="ChildNode" type="tns:IKChildNodeType" minOccurs="0" maxOccurs="unbounded">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Child IK node.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Name of the child IK node.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="boneName" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Name of the bone.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="location" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Location of the bone in the hex format "#x.y, #x.y".</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="xArray" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">X coordinate array for the bone.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="yArray" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Y coordinate array for the bone.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="angleArray" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Angle array for the bone.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="referenceID" type="tns:ReferenceType" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Reference ID of the bone.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="speed" use="optional" default="1.0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Speed of the bone. Range 0.0 to 1.0.</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:float">
+                    <xs:minInclusive value="0.0"/>
+                    <xs:maxInclusive value="1.0"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="rotationEnabled" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Enable joint rotation.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        
+        <xs:attribute name="rotationConstrained" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Indicates if rotation is constrained for the joint.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="rotationMin" type="xs:float" use="optional" default="0.0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Minimum rotation angle for the joint.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="rotationMax" type="xs:float" use="optional" default="0.0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Maximum rotation angle for the joint.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="xTranslationEnabled" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Indicates if X translation is enabled for the joint.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="xTranslationConstrained" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Indicates if X translation is constrained for the joint.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="xTranslationMin" type="xs:float" use="optional" default="0.0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Minimum X translation for the joint.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="xTranslationMax" type="xs:float" use="optional" default="0.0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Maximum X translation for the joint.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="yTranslationEnabled" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Indicates if Y translation is enabled for the joint.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="yTranslationConstrained" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Indicates if Y translation is constrained for the joint.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="yTranslationMin" type="xs:float" use="optional" default="0.0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Minimum Y translation for the joint.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="yTranslationMax" type="xs:float" use="optional" default="0.0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Maximum Y translation for the joint.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="springStrength" type="xs:float" use="optional" default="0.0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Spring strength.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="dampingValue" type="xs:float" use="optional" default="0.0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Damping value.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="tns:SelectableAttributeGroup"></xs:attributeGroup>
     </xs:complexType>
 
     <xs:complexType name="DOMFrameType">
@@ -2101,6 +2308,185 @@ elementFormDefault="qualified"
                 </xs:complexType>
             </xs:element>
             <xs:element name="elements" maxOccurs="1" type="tns:ElementListType" />
+            <xs:element name="betweenFrameMatrixList" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">List of transformation matrices between frames for Inverse kinematics.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="Matrix" type="tns:MatrixType" minOccurs="0" maxOccurs="unbounded" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="IKTree" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Inverse Kinematics (IK) armature.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="IKNode">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="childNodes" minOccurs="0" maxOccurs="1">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="ChildNode" type="tns:IKChildNodeType" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:annotation>
+                                                        <xs:documentation xml:lang="en">Child IK node.</xs:documentation>
+                                                    </xs:annotation>
+                                                </xs:element>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                                <xs:attribute name="name" type="xs:string" use="required">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Name of the IK node.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="boneName" type="xs:string" use="required">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Name of the bone associated with the IK node.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="location" type="xs:string" use="required">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Location of the IK node in the format "#x.y, #x.y".</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="referenceID" type="tns:ReferenceType" use="required">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Reference ID of the IK node.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="speed" type="xs:float" use="optional" default="1.0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Speed of the IK node.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="states">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="IKState" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                            <xs:attribute name="duration" type="xs:integer" use="required">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Duration of the IK state in frames.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="easeValue" default="0">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Easing value for the IK state. Range: -100 to 100.</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:simpleType>
+                                                    <xs:restriction base="xs:integer">
+                                                        <xs:minInclusive value="-100"/>
+                                                        <xs:maxInclusive value="100"/>
+                                                    </xs:restriction>
+                                                </xs:simpleType>
+                                            </xs:attribute>
+                                            <xs:attribute name="easeType" use="optional" default="none">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Type of easing applied to the IK state.</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:simpleType>
+                                                    <xs:restriction base="xs:string">
+                                                        <xs:enumeration value="none">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">None.</xs:documentation>
+                                                            </xs:annotation>
+                                                        </xs:enumeration>
+                                                        <xs:enumeration value="simple quadratic">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">Simple (Slow).</xs:documentation>
+                                                            </xs:annotation>
+                                                        </xs:enumeration>
+                                                        <xs:enumeration value="simple cubic">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">Simple (Medium).</xs:documentation>
+                                                            </xs:annotation>
+                                                        </xs:enumeration>
+                                                        <xs:enumeration value="simple quartic">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">Simple (Fast).</xs:documentation>
+                                                            </xs:annotation>
+                                                        </xs:enumeration>
+                                                        <xs:enumeration value="simple quintic">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">Simple (Fastest).</xs:documentation>
+                                                            </xs:annotation>
+                                                        </xs:enumeration>
+                                                        <xs:enumeration value="dual quadratic">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">Stop and Start (Slow).</xs:documentation>
+                                                            </xs:annotation>
+                                                        </xs:enumeration>
+                                                        <xs:enumeration value="dual cubic">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">Stop and Start (Medium).</xs:documentation>
+                                                            </xs:annotation>
+                                                        </xs:enumeration>
+                                                        <xs:enumeration value="dual quartic">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">Stop and Start (Fast).</xs:documentation>
+                                                            </xs:annotation>
+                                                        </xs:enumeration>
+                                                        <xs:enumeration value="dual quintic">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">Stop and Start (Fastest).</xs:documentation>
+                                                            </xs:annotation>
+                                                        </xs:enumeration>
+                                                    </xs:restriction>
+                                                </xs:simpleType>
+                                            </xs:attribute>
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="name" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Name of the IK tree.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="treeName" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Name of the tree in the IK hierarchy.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="physicsEnabled" type="xs:boolean" default="false">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Enable springs.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>  
+                    <xs:attribute name="exportType" default="authortime">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Type of export for the IK tree.</xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="authortime"/>
+                                <xs:enumeration value="runtime"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>                
+                    <xs:attribute name="displayStyle" default="solid">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Display style for the IK tree.</xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="wire"/>
+                                <xs:enumeration value="solid"/>
+                                <xs:enumeration value="line"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
         </xs:sequence>
         
         <xs:attribute name="index" type="xs:integer" use="required">
@@ -2327,6 +2713,11 @@ elementFormDefault="qualified"
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
+        <xs:attribute name="isIKPose" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Indicates if the frame is an Inverse Kinematics (IK) pose.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
     
     <xs:complexType name="DOMTimelineType">
@@ -2444,6 +2835,16 @@ elementFormDefault="qualified"
                                         <xs:documentation xml:lang="en">Height multiplier for the layer in the timeline UI. Bigger number = taller layer.</xs:documentation>
                                     </xs:annotation>
                                 </xs:attribute>
+                                <xs:attribute name="poseLocations" use="optional">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Comma-separated list of pose locations for IK pose layers.</xs:documentation>
+                                    </xs:annotation>
+                                    <xs:simpleType>
+                                        <xs:restriction base="xs:string">
+                                            <xs:pattern value="(\d+,\s*)*\d+"/>
+                                        </xs:restriction>
+                                    </xs:simpleType>
+                                </xs:attribute>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
@@ -2459,7 +2860,7 @@ elementFormDefault="qualified"
             <xs:annotation>
                 <xs:documentation xml:lang="en">Current frame index in the timeline. (0-based)</xs:documentation>
             </xs:annotation>
-        </xs:attribute>
+        </xs:attribute>        
     </xs:complexType>
 
 
@@ -3075,6 +3476,38 @@ elementFormDefault="qualified"
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="persistentData" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en"><![CDATA[
+                            <p>Persistent data associated with the document.</p>
+                            <p>For example Inverse Kinematics stores there "ikBoneCount", "ikTreeCount", "ikNodeCount" </p>
+
+                        ]]></xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="PD" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attribute name="n" type="xs:string" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Name of the persistent data.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="t" type="xs:string" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Type of the persistent data. i=integer</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="v" type="xs:string" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Value of the persistent data.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
                 <xs:element name="scripts" minOccurs="0" maxOccurs="1">
                     <xs:annotation>
                         <xs:documentation xml:lang="en">Unsure: Scripts associated with the document. Since: Animate 2020?</xs:documentation>
@@ -3449,15 +3882,10 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">Y coordinate of the 3D vanishing point.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="filetypeGUID" use="optional">
+            <xs:attribute name="filetypeGUID" type="tns:UuidType" use="optional">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">GUID of the file type. Since: Animate CC 2015?</xs:documentation>
                 </xs:annotation>
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:pattern value="[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}"/>
-                    </xs:restriction>
-                </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="fileGUID" use="optional">
                 <xs:annotation>
