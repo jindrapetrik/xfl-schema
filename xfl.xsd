@@ -5,20 +5,22 @@ targetNamespace="http://ns.adobe.com/xfl/2008/"
 elementFormDefault="qualified"
 >
     <xs:annotation>
-        <xs:documentation xml:lang="en"><![CDATA[
-            <h1>XFL Schema</h1>
-            <p>Schema describing XFL files used by Adobe Flash Professional CS5 and later.</p>
-            <p>Version: <b>0.0.2</b>, release date (2025-10-20)</p>
-            <p>Author: Jindra Petrik (JPEXS)</p>
-            <p>Contact: jindra.petrik@gmail.com</p>
-            <p>WARNING: Schema might be incomplete or inaccurate.</p>
-            <p>Parts where I really don't know are marked with "Unsure" prefix.</p>
-            <h2>Changelog</h2>
-            <ul>
-                <li><b>2025-10-20 v0.0.2</b>: Inverse Kinematics (Bone tool).</li>
-                <li><b>2025-10-19 v0.0.1</b>: Initial version.</li>
-            </ul>
-        ]]></xs:documentation>
+        <xs:documentation xml:lang="en">
+            <div xmlns="http://www.w3.org/1999/xhtml">
+                <h1>XFL Schema</h1>
+                <p>Schema describing XFL files used by Adobe Flash Professional CS5 and later.</p>
+                <p>Version: <b>0.0.2</b>, release date (2025-10-20)</p>
+                <p>Author: Jindra Petrik (JPEXS)</p>
+                <p>Contact: jindra.petrik@gmail.com</p>
+                <p>WARNING: Schema might be incomplete or inaccurate.</p>
+                <p>Parts where I really don't know are marked with "Unsure" prefix.</p>
+                <h2>Changelog</h2>
+                <ul>
+                    <li><b>2025-10-20 v0.0.2</b>: Inverse Kinematics (Bone tool).</li>
+                    <li><b>2025-10-19 v0.0.1</b>: Initial version.</li>
+                </ul>
+            </div>
+        </xs:documentation>
         <xs:appinfo>
             <meta:version xmlns:meta="urn:metadata">0.0.1</meta:version>
             <meta:releaseDate xmlns:meta="urn:metadata">2025-10-19</meta:releaseDate>
