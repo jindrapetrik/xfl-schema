@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>cz.example</groupId>
+  <artifactId>xsd-docs</artifactId>
+  <version>1.0.0</version>
+  <name>XSD → HTML documentation</name>
+  <description>Generate HTML documentation from XSD using xs3p (XSLT) and Saxon-HE.</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <saxon.version>12.4</saxon.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>net.sf.saxon</groupId>
+      <artifactId>Saxon-HE</artifactId>
+      <version>${saxon.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.1</version>
+        <executions>
+          <execution>
+            <id>generate-xsd-docs</id>
+            <phase>generate-resources</phase>
+            <goals><goal>java</goal></goals>
+            <configuration>
+              <mainClass>net.sf.saxon.Transform</mainClass>
+              <arguments>
+                <!-- input XSD -->
+                <argument>-s:${project.basedir}/../xfl.xsd</argument>
+                <!-- XSLT template (xs3p) -->
+                <argument>-xsl:${project.basedir}/../xslt/xs3p.xsl</argument>
+                <!-- output -->
+                <argument>-o:${project.basedir}/../docs/xfl.html</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.4.0</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${project.basedir}/../docs</directory>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

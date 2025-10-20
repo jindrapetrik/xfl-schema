@@ -1,0 +1,68 @@
+name: XSD Docs
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Ensure xslt dir & fetch xs3p
+        run: |
+          mkdir -p xslt
+          curl -L https://raw.githubusercontent.com/neeraj9/xs3p/master/xs3p.xsl -o xslt/xs3p.xsl
+
+      - name: Build docs
+        run: |
+          cd html-generator
+          mvn -q -B clean generate-resources
+
+      - name: Upload HTML as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xsd-docs-html
+          path: docs/
+
+  deploy-pages:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xsd-docs-html
+          path: ./public
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
