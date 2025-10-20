@@ -264,7 +264,7 @@ elementFormDefault="qualified"
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
-        <xs:attributeGroup ref="tns:FilterAttrs"/>
+        <xs:attributeGroup ref="tns:FilterAttributeGroup"/>
     </xs:complexType>
 
     <xs:group name="FillGroup">
@@ -875,7 +875,7 @@ elementFormDefault="qualified"
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="filters" minOccurs="0" maxOccurs="1" type="tns:tFilterList">
+            <xs:element name="filters" minOccurs="0" maxOccurs="1" type="tns:FilterListType">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">List of filters applied to the text object.</xs:documentation>
                 </xs:annotation>
@@ -1039,7 +1039,7 @@ elementFormDefault="qualified"
         </xs:sequence>
     </xs:complexType>
 
-    <xs:attributeGroup name="FilterAttrs">
+    <xs:attributeGroup name="FilterAttributeGroup">
         <xs:annotation>
             <xs:documentation xml:lang="en">Common attributes for all filters.</xs:documentation>
         </xs:annotation>
@@ -1050,7 +1050,7 @@ elementFormDefault="qualified"
         </xs:attribute>
     </xs:attributeGroup>
 
-    <xs:complexType name="tFilterList">
+    <xs:complexType name="FilterListType">
         <xs:annotation>
             <xs:documentation xml:lang="en">List of filters that can be applied to display objects.</xs:documentation>
         </xs:annotation>
@@ -1120,7 +1120,7 @@ elementFormDefault="qualified"
                     <xs:attribute name="color" type="tns:ColorType" default="#000000"/>
                     <xs:attribute name="alpha" type="xs:float" use="optional" default="1.0"/>
 
-                    <xs:attributeGroup ref="tns:FilterAttrs"/>
+                    <xs:attributeGroup ref="tns:FilterAttributeGroup"/>
                 </xs:complexType>
             </xs:element>
             <xs:element name="BlurFilter">
@@ -1151,7 +1151,7 @@ elementFormDefault="qualified"
                         </xs:annotation>
                     </xs:attribute>
 
-                    <xs:attributeGroup ref="tns:FilterAttrs"/>                                                                                                                     
+                    <xs:attributeGroup ref="tns:FilterAttributeGroup"/>                                                                                                                     
                 </xs:complexType>
             </xs:element>
             <xs:element name="GlowFilter">
@@ -1205,7 +1205,7 @@ elementFormDefault="qualified"
                     <xs:attribute name="color" type="tns:ColorType" default="#000000"/>
                     <xs:attribute name="alpha" type="xs:float" use="optional" default="1.0"/>
 
-                    <xs:attributeGroup ref="tns:FilterAttrs"/>
+                    <xs:attributeGroup ref="tns:FilterAttributeGroup"/>
                     </xs:complexType>
             </xs:element>
             <xs:element name="BevelFilter">
@@ -1292,7 +1292,7 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Alpha transparency of the highlight portion of the bevel.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attributeGroup ref="tns:FilterAttrs"/>
+                    <xs:attributeGroup ref="tns:FilterAttributeGroup"/>
                 </xs:complexType>
             </xs:element>            
             <xs:element name="GradientGlowFilter" type="tns:GradientFilterType" />
@@ -1343,8 +1343,8 @@ elementFormDefault="qualified"
                             </xs:restriction>
                         </xs:simpleType>
                     </xs:attribute>
-                    
-                    <xs:attributeGroup ref="tns:FilterAttrs"/>
+
+                    <xs:attributeGroup ref="tns:FilterAttributeGroup"/>
                 </xs:complexType>
             </xs:element>
         </xs:choice>
@@ -1415,7 +1415,7 @@ elementFormDefault="qualified"
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
-                        <xs:element name="filters" minOccurs="0" maxOccurs="1" type="tns:tFilterList">
+                        <xs:element name="filters" minOccurs="0" maxOccurs="1" type="tns:FilterListType">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">List of filters applied to the symbol instance.</xs:documentation>
                             </xs:annotation>
