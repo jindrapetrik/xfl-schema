@@ -17,6 +17,7 @@ elementFormDefault="qualified"
                 <p>Parts where I really don't know are marked with "Unsure" prefix.</p>
                 <h2>Changelog</h2>
                 <ul>
+                    <li><b>Unreleased</b>: Improved Inverse Kinematics (IK) support.</li>
                     <li><b>2025-10-20 v1.0.0</b>: First stable release. Added license, minor changes.</li>
                     <li><b>2025-10-20 v0.0.2</b>: Inverse Kinematics (Bone tool).</li>
                     <li><b>2025-10-19 v0.0.1</b>: Initial version.</li>
@@ -1926,12 +1927,12 @@ elementFormDefault="qualified"
         </xs:choice>
     </xs:complexType>
 
-    <xs:complexType name="IKChildNodeType">
+    <xs:complexType name="IKNodeType">
         <xs:annotation>
             <xs:documentation xml:lang="en">Inverse kinematics(IK) bone.</xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="states">
+            <xs:element name="states" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="State" maxOccurs="unbounded">
@@ -1941,12 +1942,22 @@ elementFormDefault="qualified"
                                         <xs:documentation xml:lang="en">Duration of the state in frames.</xs:documentation>
                                     </xs:annotation>
                                 </xs:attribute>
-                                <xs:attribute name="x" type="xs:float" use="required">
+                                <xs:attribute name="x" type="xs:float" use="optional" default="0.0">
                                     <xs:annotation>
                                         <xs:documentation xml:lang="en">X coordinate of the bone in this state.</xs:documentation>
                                     </xs:annotation>
                                 </xs:attribute>
-                                <xs:attribute name="y" type="xs:float" use="required">
+                                <xs:attribute name="y" type="xs:float" use="optional" default="0.0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Y coordinate of the bone in this state.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="xRel" type="xs:float" use="optional" default="0.0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">X coordinate of the bone in this state.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="yRel" type="xs:float" use="optional" default="0.0">
                                     <xs:annotation>
                                         <xs:documentation xml:lang="en">Y coordinate of the bone in this state.</xs:documentation>
                                     </xs:annotation>
@@ -1961,10 +1972,11 @@ elementFormDefault="qualified"
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="worldMatrix" minOccurs="0" maxOccurs="1" type="tns:MatrixContainerType"/>
             <xs:element name="childNodes" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="ChildNode" type="tns:IKChildNodeType" minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="ChildNode" type="tns:IKNodeType" minOccurs="0" maxOccurs="unbounded">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Child IK node.</xs:documentation>
                             </xs:annotation>
@@ -1988,22 +2000,22 @@ elementFormDefault="qualified"
                 <xs:documentation xml:lang="en">Location of the bone in the hex format "#x.y, #x.y".</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="xArray" type="xs:string" use="required">
+        <xs:attribute name="xArray" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation xml:lang="en">X coordinate array for the bone.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="yArray" type="xs:string" use="required">
+        <xs:attribute name="yArray" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Y coordinate array for the bone.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="angleArray" type="xs:string" use="required">
+        <xs:attribute name="angleArray" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Angle array for the bone.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="referenceID" type="tns:ReferenceType" use="required">
+        <xs:attribute name="referenceID" type="tns:ReferenceType" use="optional">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Reference ID of the bone.</xs:documentation>
             </xs:annotation>
@@ -2089,6 +2101,20 @@ elementFormDefault="qualified"
             <xs:annotation>
                 <xs:documentation xml:lang="en">Damping value.</xs:documentation>
             </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="nodeType" default="undefined">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Type of the IK node.</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="undefined"/>
+                    <xs:enumeration value="lsd"/>
+                    <xs:enumeration value="ik"/>
+                    <xs:enumeration value="shape"/>
+                    <xs:enumeration value="symbol"/>
+                </xs:restriction>
+            </xs:simpleType>
         </xs:attribute>
         <xs:attributeGroup ref="tns:SelectableAttributeGroup"></xs:attributeGroup>
     </xs:complexType>
@@ -2328,48 +2354,7 @@ elementFormDefault="qualified"
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="IKNode">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="childNodes" minOccurs="0" maxOccurs="1">
-                                        <xs:complexType>
-                                            <xs:sequence>
-                                                <xs:element name="ChildNode" type="tns:IKChildNodeType" minOccurs="0" maxOccurs="unbounded">
-                                                    <xs:annotation>
-                                                        <xs:documentation xml:lang="en">Child IK node.</xs:documentation>
-                                                    </xs:annotation>
-                                                </xs:element>
-                                            </xs:sequence>
-                                        </xs:complexType>
-                                    </xs:element>
-                                </xs:sequence>
-                                <xs:attribute name="name" type="xs:string" use="required">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Name of the IK node.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                                <xs:attribute name="boneName" type="xs:string" use="required">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Name of the bone associated with the IK node.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                                <xs:attribute name="location" type="xs:string" use="required">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Location of the IK node in the format "#x.y, #x.y".</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                                <xs:attribute name="referenceID" type="tns:ReferenceType" use="required">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Reference ID of the IK node.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                                <xs:attribute name="speed" type="xs:float" use="optional" default="1.0">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Speed of the IK node.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                            </xs:complexType>
-                        </xs:element>
+                        <xs:element name="IKNode" type="tns:IKNodeType"/>
                         <xs:element name="states">
                             <xs:complexType>
                                 <xs:sequence>
@@ -2450,6 +2435,105 @@ elementFormDefault="qualified"
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
+                        <xs:element name="IKContour" minOccurs="0" maxOccurs="1">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Contour data for the IK tree.</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="dataPoints">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">List of data points defining the contour.</xs:documentation>
+                                        </xs:annotation>
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="DataPoint" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                        <xs:attribute name="integerPoint">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">Coordinates of the data point in float format "#x, #y".</xs:documentation>
+                                                            </xs:annotation>
+                                                            <xs:simpleType>
+                                                                <xs:restriction base="xs:string">
+                                                                    <xs:pattern value="(#[0-9A-Fa-f]+(\.[0-9A-Fa-f]+)?|-?\d+(\.\d+)?), (#[0-9A-Fa-f]+(\.[0-9A-Fa-f]+)?|-?\d+(\.\d+)?)"/>
+                                                                </xs:restriction>
+                                                            </xs:simpleType>
+                                                        </xs:attribute>
+                                                    </xs:complexType>
+                                                </xs:element>                                                
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                    <xs:element name="matrix" type="tns:MatrixContainerType">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Transformation matrix for the contour.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:element>
+                                    <xs:group ref="tns:StrokeGroup">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Stroke properties for the contour.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:group>
+                                    <xs:group ref="tns:FillGroup">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Fill properties for the contour.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:group>
+                                </xs:sequence>
+                                <xs:attribute name="interior" type="xs:boolean" default="false">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Whether the contour is interior.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="orientation" default="counter clockwise">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Orientation of the contour.</xs:documentation>
+                                    </xs:annotation>
+                                    <xs:simpleType>
+                                        <xs:restriction base="xs:string">                                            
+                                            <xs:enumeration value="counter clockwise"/>
+                                            <xs:enumeration value="clockwise"/>
+                                            <xs:enumeration value="no area"></xs:enumeration>
+                                        </xs:restriction>
+                                    </xs:simpleType>
+                                </xs:attribute>
+                                <xs:attribute name="rectLeft" type="xs:integer" default="0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Left coordinate of the contour's bounding rectangle.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="rectTop" type="xs:integer" default="0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Top coordinate of the contour's bounding rectangle.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="rectRight" type="xs:integer" default="0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Right coordinate of the contour's bounding rectangle.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="rectBottom" type="xs:integer" default="0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Bottom coordinate of the contour's bounding rectangle.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="fillSelected" type="xs:boolean" default="false">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Whether the fill is selected.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="strokeHasSelection" type="xs:boolean" default="false">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Whether the stroke has selection.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="strokeFullySelected" type="xs:boolean" default="false">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Whether the stroke is fully selected.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                            </xs:complexType>
+                        </xs:element>
                     </xs:sequence>
                     <xs:attribute name="name" type="xs:string" use="required">
                         <xs:annotation>
@@ -2489,6 +2573,26 @@ elementFormDefault="qualified"
                             </xs:restriction>
                         </xs:simpleType>
                     </xs:attribute>
+                    <xs:attribute name="connectionIndices">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Indices of connections in the IK tree. (comma-separated list of floats)</xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:pattern value="(\s*-?\d+(\.\d+)?\s*,)*\s*-?\d+(\.\d+)?\s*"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                    <xs:attribute name="connectionData">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Data for connections in the IK tree. (comma-separated list of floats)</xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:pattern value="(\s*-?\d+(\.\d+)?\s*,)*\s*-?\d+(\.\d+)?\s*"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>                    
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
