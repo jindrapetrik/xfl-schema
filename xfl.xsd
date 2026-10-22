@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
 xmlns:tns="http://ns.adobe.com/xfl/2008/"
+xmlns:tl="http://ns.adobe.com/textLayout/2008"
 targetNamespace="http://ns.adobe.com/xfl/2008/"
 elementFormDefault="qualified"
 >
@@ -17,7 +18,7 @@ elementFormDefault="qualified"
                 <p>Parts where I really don't know are marked with "Unsure" prefix.</p>
                 <h2>Changelog</h2>
                 <ul>
-                    <li><b>Unreleased</b>: Improved Inverse Kinematics (IK) support.</li>
+                    <li><b>2026-10-22 v2.0.0</b>: Shared complete IK state easing attributes (including integer easeIn/easeOut); corrected native IK speed range and XML default. Allowed IK contours with no fill or no stroke, matching native omission of absent paints. Added IK node pin containers and integer-point positions. Improved Inverse Kinematics (IK) support. Added missing group selection, symbol locking, button menu tracking, classic tween scaling and JPEG deblocking attributes. Added component/compiled-clip items and instances, primitive shapes, motion XML, guides and typed persistent values. Corrected accessibility, media/text properties, signed morph indexes, fractional grid spacing and document guide attributes. Added indexed custom-icon color tables. Allowed fractional IK easing strengths. Added a companion schema for publish profiles and legacy library-path fields. Defined morph hint endpoints and keys. Added 3D view adjustment and corrected vanishing-point defaults. Allowed cubic control nets without approximation points. Completed swatch sets: mixed colors, gradient matrices/focal points, empty stop lists, multiple sets and native HSB bounds. Added frame bookmarks. Added classic text screen spacing and corrected the aliasText default. Completed TLF placement, markup references, string metadata and fractional container dimensions. Allow numeric first-baseline offsets and the complete TextFlow grammar. Declare the archived IK node lock flag and correct the native rotation-enabled default to true. Add recursive IKContainedContour/NextContour structures.</li>
                     <li><b>2025-10-20 v1.0.0</b>: First stable release. Added license, minor changes.</li>
                     <li><b>2025-10-20 v0.0.2</b>: Inverse Kinematics (Bone tool).</li>
                     <li><b>2025-10-19 v0.0.1</b>: Initial version.</li>
@@ -25,10 +26,81 @@ elementFormDefault="qualified"
             </div>
         </xs:documentation>
         <xs:appinfo>
-            <meta:version xmlns:meta="urn:metadata">1.0.0</meta:version>
-            <meta:releaseDate xmlns:meta="urn:metadata">2025-10-20</meta:releaseDate>
+            <meta:version xmlns:meta="urn:metadata">2.0.0</meta:version>
+            <meta:releaseDate xmlns:meta="urn:metadata">2026-10-22</meta:releaseDate>
         </xs:appinfo>
     </xs:annotation>
+
+    <xs:import namespace="http://ns.adobe.com/textLayout/2008" schemaLocation="textLayout.xsd"/>
+    <xs:import schemaLocation="PublishSettings.xsd"/>
+
+    <xs:simpleType name="TlfNonnegativeNumberType"><xs:restriction base="xs:decimal"><xs:minInclusive value="0"/></xs:restriction></xs:simpleType>
+    <xs:complexType name="SolidSwatchItemType">
+        <xs:attribute name="color" type="tns:ColorType" use="optional" default="#000000">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Color of the swatch.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="alpha" type="xs:float" use="optional" default="1.0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Alpha (opacity) of the swatch color.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="hue" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Hue adjustment for the swatch color.</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:integer">
+                    <xs:minInclusive value="0"/>
+                    <xs:maxInclusive value="255"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="saturation" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Saturation adjustment for the swatch color.</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:integer">
+                    <xs:minInclusive value="0"/>
+                    <xs:maxInclusive value="255"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="brightness" use="optional" default="0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Brightness adjustment for the swatch color.</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:integer">
+                    <xs:minInclusive value="0"/>
+                    <xs:maxInclusive value="255"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="GradientSwatchItemType">
+        <xs:sequence>
+            <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0"/>
+            <xs:element name="GradientEntry" type="tns:GradientEntryType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="tns:GradientAttributeGroup"/>
+        <xs:attribute name="focalPointRatio" type="xs:double" default="0"/>
+    </xs:complexType>
+    <xs:complexType name="SwatchListType">
+        <xs:sequence>
+            <xs:element name="swatches">
+                <xs:complexType>
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="SolidSwatchItem" type="tns:SolidSwatchItemType"/>
+                        <xs:element name="LinearGradientSwatchItem" type="tns:GradientSwatchItemType"/>
+                        <xs:element name="RadialGradientSwatchItem" type="tns:GradientSwatchItemType"/>
+                    </xs:choice>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
 
     <xs:simpleType name="UuidType">
         <xs:annotation>
@@ -370,7 +442,8 @@ elementFormDefault="qualified"
                 <xs:complexType>
                     <xs:complexContent>
                         <xs:extension base="tns:AbstractStrokeType">
-                            <xs:attribute name="caps" default="round">
+                            <xs:attribute name="solidStyle" type="xs:string" use="optional"><xs:annotation><xs:documentation>Native XFL uses hairline with a one-twip stroke.</xs:documentation></xs:annotation></xs:attribute>
+<xs:attribute name="caps" default="round">
                                 <xs:annotation>
                                     <xs:documentation xml:lang="en">Type of line caps.</xs:documentation>
                                 </xs:annotation>
@@ -744,6 +817,17 @@ elementFormDefault="qualified"
     </xs:attributeGroup>
 
 
+    <xs:attributeGroup name="AccessibilityAttributeGroup">
+        <xs:attribute name="hasAccessibleData" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="silent" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="forceSimple" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="autoLabeling" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="accName" type="xs:string" use="optional"/>
+        <xs:attribute name="description" type="xs:string" use="optional"/>
+        <xs:attribute name="shortcut" type="xs:string" use="optional"/>
+        <xs:attribute name="tabIndex" type="xs:string" use="optional"/>
+    </xs:attributeGroup>
+
     <xs:complexType name="AbstractDOMTextType">
         <xs:sequence>
             <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
@@ -768,8 +852,9 @@ elementFormDefault="qualified"
                                             <xs:sequence>
                                                 <xs:element name="DOMTextAttrs">
                                                     <xs:complexType>
-                                                        <xs:attribute name="aliasText" type="xs:boolean" use="optional" default="false"/>
-                                                        <xs:attribute name="size" type="xs:integer" use="required">
+                                                        <xs:attribute name="aliasText" type="xs:boolean" use="optional" default="true"/>
+                                                        <xs:attribute name="useScreenSpacing" type="xs:boolean" use="optional"/>
+                                                        <xs:attribute name="size" type="xs:integer" use="optional" default="12">
                                                             <xs:annotation>
                                                                 <xs:documentation xml:lang="en">Font size in points.</xs:documentation>
                                                             </xs:annotation>
@@ -885,7 +970,8 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">List of filters applied to the text object.</xs:documentation>
                 </xs:annotation>
             </xs:element>
-        </xs:sequence>
+        <xs:element name="persistentData" type="tns:PersistentDataType" minOccurs="0"/>
+</xs:sequence>
         <xs:attribute name="antiAliasSharpness" type="xs:float" default="0.0">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Sharpness of the anti-aliasing. Only when fontRenderingMode=customThicknessSharpness.</xs:documentation>
@@ -950,7 +1036,9 @@ elementFormDefault="qualified"
             </xs:annotation>
         </xs:attribute>
         <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
-    </xs:complexType>
+    <xs:attributeGroup ref="tns:AccessibilityAttributeGroup"/>
+        <xs:attribute name="referenceID" type="tns:ReferenceType"/>
+</xs:complexType>
 
     <xs:attributeGroup name="SelectableAttributeGroup">
         <xs:attribute name="selected" type="xs:boolean" default="false">
@@ -1392,39 +1480,352 @@ elementFormDefault="qualified"
                             </xs:annotation>
                         </xs:element>
                     </xs:sequence>
-                </xs:complexType>
+                    <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
+                <xs:attribute name="referenceID" type="tns:ReferenceType"/>
+</xs:complexType>
             </xs:element>
-            <xs:element name="DOMSymbolInstance">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">Instance of a symbol from the library.</xs:documentation>
-                </xs:annotation>
+            <xs:element name="DOMSymbolInstance" type="tns:DOMSymbolInstanceType"/>
+            <xs:element name="DOMBitmapInstance">
                 <xs:complexType>
                     <xs:sequence>
                         <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
                             <xs:annotation>
-                                <xs:documentation xml:lang="en">Transformation matrix for the symbol instance.</xs:documentation>
+                                <xs:documentation xml:lang="en">Transformation matrix for the bitmap instance.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
                         <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
                             <xs:annotation>
-                                <xs:documentation xml:lang="en">Transformation point for the symbol instance.</xs:documentation>
+                                <xs:documentation xml:lang="en">Transformation point for the bitmap instance.</xs:documentation>
                             </xs:annotation>
                         </xs:element>
-                        <xs:element name="Actionscript" minOccurs="0" maxOccurs="1">
+                    <xs:element name="persistentData" type="tns:PersistentDataType" minOccurs="0"/>
+</xs:sequence>
+                    <xs:attribute name="libraryItemName" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Name of the bitmap in the library.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="name" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Name of the bitmap instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="referenceID" type="tns:ReferenceType" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Reference ID for the bitmap instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="DOMVideoInstance">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
                             <xs:annotation>
-                                <xs:documentation xml:lang="en">ActionScript code associated with the symbol instance.</xs:documentation>
+                                <xs:documentation xml:lang="en">Transformation matrix for the video instance.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Transformation point for the video instance.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="frameLeft" type="xs:integer" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Left frame of the video instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="frameTop" type="xs:integer" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Top frame of the video instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="frameRight" type="xs:integer" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Right frame of the video instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="frameBottom" type="xs:integer" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Bottom frame of the video instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="name" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Name of the video instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="libraryItemName" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Name of the video in the library.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
+                <xs:attribute name="referenceID" type="tns:ReferenceType"/>
+</xs:complexType>
+            </xs:element>
+            <xs:element name="DOMStaticText">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Static text element.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="tns:AbstractDOMTextType">
+                            <xs:attributeGroup ref="tns:NonInputTextAttributeGroup"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="DOMDynamicText">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Dynamic text element.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="tns:AbstractDOMTextType">
+                            <xs:attributeGroup ref="tns:NonInputTextAttributeGroup"/>
+                            <xs:attributeGroup ref="tns:NonStaticTextAttributeGroup"/>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="DOMInputText">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Input text element.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="tns:AbstractDOMTextType">
+                            <xs:attributeGroup ref="tns:NonStaticTextAttributeGroup"/>
+                            <xs:attribute name="maxCharacters" type="xs:nonNegativeInteger" use="optional">
+                                <xs:annotation>
+                                    <xs:documentation xml:lang="en">Maximum number of characters allowed in the input text field.</xs:documentation>
+                                </xs:annotation>
+                            </xs:attribute>
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="DOMTLFText">
+                <xs:complexType>
+
+                    <xs:sequence>
+                        <xs:element name="matrix" type="tns:MatrixContainerType">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Transformation matrix for the TLF text field.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0"/>
+                        <xs:element name="tlfFonts">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">List of TLF fonts used in the text field.</xs:documentation>
                             </xs:annotation>
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="script" type="xs:string"/>                                                                                                    
+                                    <xs:element name="TLFFont" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                            <xs:attribute name="platformName" type="xs:string" use="required">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Platform font name. Example: "Times New Roman"</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="psName" type="xs:string" use="required">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">PostScript font name. Example: "TimesNewRomanPSMT"</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="bold" type="xs:boolean" default="false"/>
+                                            <xs:attribute name="italic" type="xs:boolean" default="false"/>
+                                        </xs:complexType>
+                                    </xs:element>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
-                        <xs:element name="filters" minOccurs="0" maxOccurs="1" type="tns:FilterListType">
+                        <xs:element name="markup">
                             <xs:annotation>
-                                <xs:documentation xml:lang="en">List of filters applied to the symbol instance.</xs:documentation>
+                                <xs:documentation xml:lang="en">TLF markup content.</xs:documentation>
                             </xs:annotation>
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="tlfTextObject">
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element ref="tl:TextFlow" />
+                                            </xs:sequence>
+                                            <xs:attribute name="type" use="optional" default="Point">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Type of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:simpleType>
+                                                    <xs:restriction base="xs:string">
+                                                        <xs:enumeration value="Point"/>
+                                                        <xs:enumeration value="Paragraph"/>
+                                                    </xs:restriction>
+                                                </xs:simpleType>
+                                            </xs:attribute>
+
+                                            <xs:attribute name="editPolicy" use="optional" default="readOnly">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Edit policy for the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:simpleType>
+                                                    <xs:restriction base="xs:string">
+                                                        <xs:enumeration value="readOnly"/>
+                                                        <xs:enumeration value="readSelect"/>
+                                                        <xs:enumeration value="readWrite"/>
+                                                    </xs:restriction>
+                                                </xs:simpleType>
+                                            </xs:attribute>
+                                            <xs:attribute name="columnCount" type="xs:nonNegativeInteger" use="optional">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Number of columns in the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="columnGap" type="tns:TlfNonnegativeNumberType" use="optional">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Gap between columns in the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="verticalAlign" use="optional">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Vertical alignment of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:simpleType>
+                                                    <xs:restriction base="xs:string">
+                                                        <xs:enumeration value="top"/>
+                                                        <xs:enumeration value="middle"/>
+                                                        <xs:enumeration value="bottom"/>
+                                                        <xs:enumeration value="justify"/>
+                                                    </xs:restriction>
+                                                </xs:simpleType>
+                                            </xs:attribute>
+                                            <xs:attribute name="firstBaselineOffset" use="optional" default="auto">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">First baseline offset of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:simpleType>
+                                                    <xs:union memberTypes="tns:TlfNonnegativeNumberType"><xs:simpleType><xs:restriction base="xs:string">
+                                                        <xs:enumeration value="auto"/>
+                                                        <xs:enumeration value="ascent"/>
+                                                        <xs:enumeration value="lineHeight"/>
+                                                    </xs:restriction></xs:simpleType></xs:union>
+                                                </xs:simpleType>
+                                            </xs:attribute>
+                                            <xs:attribute name="paddingLeft" type="tns:TlfNonnegativeNumberType" use="optional">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Left padding of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="paddingTop" type="tns:TlfNonnegativeNumberType" use="optional">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Top padding of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="paddingRight" type="tns:TlfNonnegativeNumberType" use="optional">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Right padding of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="paddingBottom" type="tns:TlfNonnegativeNumberType" use="optional">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Bottom padding of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="background" type="xs:boolean" default="false">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Whether the TLF text object has a background.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="backgroundColor" type="tns:ColorType" use="optional" default="#ffffff">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Background color of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="backgroundAlpha" use="optional" default="1">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Background alpha of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:simpleType>
+                                                    <xs:restriction base="xs:float">
+                                                        <xs:minInclusive value="0"/>
+                                                        <xs:maxInclusive value="1"/>
+                                                    </xs:restriction>
+                                                </xs:simpleType>
+                                            </xs:attribute>
+                                            <xs:attribute name="border" type="xs:boolean" default="false">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Whether the TLF text object has a border.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="borderColor" type="tns:ColorType" use="optional" default="#000000">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Border color of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="borderAlpha" use="optional" default="1">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Border alpha of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:simpleType>
+                                                    <xs:restriction base="xs:float">
+                                                        <xs:minInclusive value="0"/>
+                                                        <xs:maxInclusive value="1"/>
+                                                    </xs:restriction>
+                                                </xs:simpleType>
+                                            </xs:attribute>
+                                            <xs:attribute name="borderWidth" type="tns:TlfNonnegativeNumberType" use="optional" default="1">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Border width of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="paddingLock" type="xs:boolean" default="false">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Whether the padding of the TLF text object is locked.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="multiline" type="xs:boolean" default="false">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Whether the TLF text object is multiline.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="antiAliasType" use="optional" default="advanced">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Anti-alias type of the TLF text object.</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:simpleType>
+                                                    <xs:restriction base="xs:string">
+                                                        <xs:enumeration value="normal"/>
+                                                        <xs:enumeration value="advanced"/>
+                                                    </xs:restriction>
+                                                </xs:simpleType>
+                                            </xs:attribute>
+                                            <xs:attribute name="embedFonts" type="xs:boolean" default="false">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Whether the TLF text object has embedded fonts.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="maxChars" type="xs:nonNegativeInteger"/>
+                                            <xs:attribute name="displayAsPassword" type="xs:boolean" default="false"/>
+                                            <xs:attribute name="text" type="xs:string"/>
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                            </xs:complexType>
                         </xs:element>
+                        <xs:element name="markupElements" minOccurs="0"><xs:complexType><xs:sequence>
+                            <xs:element name="MarkupElement" minOccurs="0" maxOccurs="unbounded"><xs:complexType>
+                                <xs:attribute name="referenceID" type="tns:ReferenceType" use="required"/>
+                                <xs:attribute name="markupChildID" type="xs:int" default="-1"/>
+                                <xs:attribute name="referenceType" default="inline"><xs:simpleType><xs:restriction base="xs:string">
+                                    <xs:enumeration value="inline"/><xs:enumeration value="previous"/><xs:enumeration value="next"/>
+                                </xs:restriction></xs:simpleType></xs:attribute>
+                            </xs:complexType></xs:element>
+                        </xs:sequence></xs:complexType></xs:element>
+                        <xs:element name="members" type="tns:ElementListType" minOccurs="0"/>
+                        <xs:element name="filters" type="tns:FilterListType" minOccurs="0"/>
                         <xs:element name="color" minOccurs="0" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Color transformation applied to the symbol instance.</xs:documentation>
@@ -1506,80 +1907,38 @@ elementFormDefault="qualified"
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
-                        <xs:element name="MatteColor" minOccurs="0">
-                            <xs:annotation>
-                                <xs:documentation xml:lang="en">Background color used when caching as bitmap with opaque setting. Since: Flash CS5.5</xs:documentation>
-                            </xs:annotation>
-                            <xs:complexType>
-                                <xs:attribute name="color" type="tns:ColorType" use="optional" default="#ffffff"/>
-                            </xs:complexType>
-                        </xs:element>
+                        <xs:element name="persistentData" type="tns:PersistentDataType" minOccurs="0"/>
                     </xs:sequence>
-                    <xs:attribute name="libraryItemName" type="xs:string" use="required">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Name of the symbol in the library.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="symbolType" type="tns:SymbolTypeType" use="optional" default="movie clip">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Type of the symbol instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="centerPoint3DX" type="xs:float" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">X coordinate of the 3D center point.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="centerPoint3DY" type="xs:float" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Y coordinate of the 3D center point.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="centerPoint3DZ" type="xs:float" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Z coordinate of the 3D center point.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="loop" use="optional" default="loop">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">If symbolType=graphic: Whether to loop.</xs:documentation>
-                        </xs:annotation>
-                        <xs:simpleType>
-                            <xs:restriction base="xs:string">
-                                <xs:enumeration value="loop">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Loop through the frames indefinitely.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:enumeration>
-                                <xs:enumeration value="play once">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Play only once through the frames.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:enumeration>
-                                <xs:enumeration value="single frame">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Play only a single frame.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:enumeration>
-                            </xs:restriction>
-                        </xs:simpleType>
-                    </xs:attribute>
-                    <xs:attribute name="firstFrame" type="xs:nonNegativeInteger" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">If symbolType=graphic: First frame to display.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
+
                     <xs:attribute name="name" type="xs:string" use="optional">
                         <xs:annotation>
-                            <xs:documentation xml:lang="en">If symbolType &lt;&gt; graphics: Name of the symbol instance.</xs:documentation>
+                            <xs:documentation xml:lang="en">Name of the bitmap instance.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
+                    <xs:attribute name="right" type="xs:integer" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Right boundary of the text field.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="bottom" type="xs:integer" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Bottom boundary of the text field.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="left" type="xs:int"/>
+                    <xs:attribute name="top" type="xs:int"/>
+                    <xs:attribute name="referenceID" type="tns:ReferenceType"/>
+                    <xs:attribute name="localizationStringID" type="xs:string"/>
+                    <xs:attribute name="variableName" type="xs:string"/>
+                    <xs:attribute name="locked" type="xs:boolean" default="false"/>
+                    <xs:attribute name="isInBackground" type="xs:boolean" default="false"/>
+                    <xs:attribute name="cacheAsBitmap" type="xs:boolean" default="false"/>
                     <xs:attribute name="blendMode" use="optional">
                         <xs:annotation>
                             <xs:documentation xml:lang="en">Blend mode for the symbol instance.</xs:documentation>
                         </xs:annotation>
                         <xs:simpleType>
-                            <xs:restriction base="xs:string">                                                                                                                        
+                            <xs:restriction base="xs:string">
                                 <xs:enumeration value="normal"/>
                                 <xs:enumeration value="layer"/>
                                 <xs:enumeration value="multiply"/>
@@ -1597,170 +1956,59 @@ elementFormDefault="qualified"
                             </xs:restriction>
                         </xs:simpleType>
                     </xs:attribute>
-                    <xs:attribute name="isVisible" type="xs:boolean" default="true">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Visibility of the symbol instance. Since: Flash CS5.5</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="cacheAsBitmap" type="xs:boolean" default="false">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Whether to cache the symbol instance as a bitmap.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="bits32" type="xs:boolean" default="true">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Set to false when the cache as bitmap is opaque. Since: Flash CS5.5</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="matrix3D" type="tns:Matrix3DType" use="optional">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">3D transformation matrix for the symbol instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="rotationX" type="xs:float" use="optional" default="0.0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Rotation around the X axis in degrees.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="rotationY" type="xs:float" use="optional" default="0.0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Rotation around the Y axis in degrees.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="rotationZ" type="xs:float" use="optional" default="0.0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Rotation around the Z axis in degrees.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="referenceID" type="tns:ReferenceType" use="optional">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Reference ID for the bitmap instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>                    
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="DOMBitmapInstance">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
-                            <xs:annotation>
-                                <xs:documentation xml:lang="en">Transformation matrix for the bitmap instance.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
-                            <xs:annotation>
-                                <xs:documentation xml:lang="en">Transformation point for the bitmap instance.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>                                                                                                               
-                    </xs:sequence>
-                    <xs:attribute name="libraryItemName" type="xs:string" use="required">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Name of the bitmap in the library.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="name" type="xs:string" use="optional">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Name of the bitmap instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="referenceID" type="tns:ReferenceType" use="optional">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Reference ID for the bitmap instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
+                    <xs:attribute name="matrix3D" type="tns:Matrix3DType"/>
+                    <xs:attribute name="rotationX" type="xs:double"/>
+                    <xs:attribute name="rotationY" type="xs:double"/>
+                    <xs:attribute name="rotationZ" type="xs:double"/>
+                    <xs:attribute name="centerPoint3DX" type="xs:double"/>
+                    <xs:attribute name="centerPoint3DY" type="xs:double"/>
+                    <xs:attribute name="centerPoint3DZ" type="xs:double"/>
+                    <xs:attributeGroup ref="tns:AccessibilityAttributeGroup"/>
                     <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="DOMVideoInstance">
+
+            <xs:element name="DOMRectangleObject">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
-                            <xs:annotation>
-                                <xs:documentation xml:lang="en">Transformation matrix for the video instance.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
-                            <xs:annotation>
-                                <xs:documentation xml:lang="en">Transformation point for the video instance.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>                                                    
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0"/>
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0"/>
+                        <xs:element name="fill" minOccurs="0"><xs:complexType><xs:group ref="tns:FillGroup"/></xs:complexType></xs:element>
+                        <xs:element name="stroke" minOccurs="0"><xs:complexType><xs:group ref="tns:StrokeGroup"/></xs:complexType></xs:element>
                     </xs:sequence>
-                    <xs:attribute name="frameLeft" type="xs:integer" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Left frame of the video instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="frameTop" type="xs:integer" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Top frame of the video instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="frameRight" type="xs:integer" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Right frame of the video instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="frameBottom" type="xs:integer" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Bottom frame of the video instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="name" type="xs:string" use="optional">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Name of the video instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="libraryItemName" type="xs:string" use="optional">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Name of the video in the library.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:complexType>
+                    <xs:attribute name="objectWidth" type="xs:double" use="optional"/>
+                    <xs:attribute name="objectHeight" type="xs:double" use="optional"/>
+                    <xs:attribute name="x" type="xs:double" use="optional"/>
+                    <xs:attribute name="y" type="xs:double" use="optional"/>
+                    <xs:attribute name="lockFlag" type="xs:boolean" use="optional"/>
+                    <xs:attribute name="topLeftRadius" type="xs:double" use="optional"/>
+                    <xs:attribute name="topRightRadius" type="xs:double" use="optional"/>
+                    <xs:attribute name="bottomLeftRadius" type="xs:double" use="optional"/>
+                    <xs:attribute name="bottomRightRadius" type="xs:double" use="optional"/>
+                    <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
+                <xs:attribute name="referenceID" type="tns:ReferenceType"/>
+</xs:complexType>
             </xs:element>
-            <xs:element name="DOMStaticText">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">Static text element.</xs:documentation>
-                </xs:annotation>
+            <xs:element name="DOMOvalObject">
                 <xs:complexType>
-                    <xs:complexContent>
-                        <xs:extension base="tns:AbstractDOMTextType">                                                  
-                            <xs:attributeGroup ref="tns:NonInputTextAttributeGroup"/>
-                        </xs:extension>
-                    </xs:complexContent>
-                </xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0"/>
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0"/>
+                        <xs:element name="fill" minOccurs="0"><xs:complexType><xs:group ref="tns:FillGroup"/></xs:complexType></xs:element>
+                        <xs:element name="stroke" minOccurs="0"><xs:complexType><xs:group ref="tns:StrokeGroup"/></xs:complexType></xs:element>
+                    </xs:sequence>
+                    <xs:attribute name="objectWidth" type="xs:double" use="optional"/>
+                    <xs:attribute name="objectHeight" type="xs:double" use="optional"/>
+                    <xs:attribute name="x" type="xs:double" use="optional"/>
+                    <xs:attribute name="y" type="xs:double" use="optional"/>
+                    <xs:attribute name="closePath" type="xs:boolean" use="optional"/>
+                    <xs:attribute name="startAngle" type="xs:double" use="optional"/>
+                    <xs:attribute name="endAngle" type="xs:double" use="optional"/>
+                    <xs:attribute name="innerRadius" type="xs:double" use="optional"/>
+                    <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
+                <xs:attribute name="referenceID" type="tns:ReferenceType"/>
+</xs:complexType>
             </xs:element>
-            <xs:element name="DOMDynamicText">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">Dynamic text element.</xs:documentation>
-                </xs:annotation>
-                <xs:complexType>
-                    <xs:complexContent>
-                        <xs:extension base="tns:AbstractDOMTextType">                                                  
-                            <xs:attributeGroup ref="tns:NonInputTextAttributeGroup"/>
-                            <xs:attributeGroup ref="tns:NonStaticTextAttributeGroup"/>
-                        </xs:extension>
-                    </xs:complexContent>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="DOMInputText">
-                <xs:annotation>
-                    <xs:documentation xml:lang="en">Input text element.</xs:documentation>
-                </xs:annotation>
-                <xs:complexType>
-                    <xs:complexContent>
-                        <xs:extension base="tns:AbstractDOMTextType">                                                  
-                            <xs:attributeGroup ref="tns:NonStaticTextAttributeGroup"/>                                                                                                                                                                                      
-                            <xs:attribute name="maxCharacters" type="xs:nonNegativeInteger" use="optional">
-                                <xs:annotation>
-                                    <xs:documentation xml:lang="en">Maximum number of characters allowed in the input text field.</xs:documentation>
-                                </xs:annotation>
-                            </xs:attribute>
-                        </xs:extension>
-                    </xs:complexContent>
-                </xs:complexType>
-            </xs:element>
-            
             <xs:element name="DOMShape">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Shape element.</xs:documentation>
@@ -1849,7 +2097,7 @@ elementFormDefault="qualified"
                                                 </xs:annotation>
                                                 <xs:simpleType>
                                                     <xs:restriction base="xs:string">
-                                                        <xs:pattern value="!(-?[0-9]+) +(-?[0-9]+) *\(((-?[0-9]+) *, *(-?[0-9]+))? *; *(-?[0-9]+),(-?[0-9]+) +(-?[0-9]+),(-?[0-9]+) +(-?[0-9]+),(-?[0-9]+) *(([QqPp]? *-?[0-9]+ +-?[0-9]+)+) *\)((-?[0-9]+) *, *(-?[0-9]+))? *; *"/>
+                                                        <xs:pattern value="!(-?[0-9]+) +(-?[0-9]+) *\(((-?[0-9]+) *, *(-?[0-9]+))? *; *(-?[0-9]+),(-?[0-9]+) +(-?[0-9]+),(-?[0-9]+) +(-?[0-9]+),(-?[0-9]+) *(([QqPp]? *-?[0-9]+ +-?[0-9]+)*) *\)((-?[0-9]+) *, *(-?[0-9]+))? *; *"/>
                                                     </xs:restriction>
                                                 </xs:simpleType>
                                             </xs:attribute>
@@ -1865,67 +2113,203 @@ elementFormDefault="qualified"
                         </xs:annotation>
                     </xs:attribute>
                     <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>                                                                                                    
-                </xs:complexType>
+                <xs:attribute name="referenceID" type="tns:ReferenceType"/>
+</xs:complexType>
             </xs:element>
 
-            <xs:element name="DOMComponentInstance">
+            <xs:element name="DOMComponentInstance"><xs:complexType><xs:complexContent><xs:extension base="tns:DOMSymbolInstanceType"><xs:sequence>
+<xs:element name="dataBindingXML" type="xs:string" minOccurs="0"/>
+<xs:element name="parametersAsXML" type="xs:string" minOccurs="0"/>
+</xs:sequence><xs:attribute name="uniqueID" type="xs:nonNegativeInteger"/><xs:attribute name="instanceName" type="xs:string"/></xs:extension></xs:complexContent></xs:complexType></xs:element>
+
+            <xs:element name="DOMCompiledClipInstance">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
-                            <xs:annotation>
-                                <xs:documentation xml:lang="en">Transformation matrix for the component instance.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
-                            <xs:annotation>
-                                <xs:documentation xml:lang="en">Transformation point for the component instance.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                        <xs:element name="dataBindingXML" minOccurs="0" type="xs:string">
-                            <xs:annotation>
-                                <xs:documentation xml:lang="en">XML string containing data binding information.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
-                        <xs:element name="parametersAsXML" minOccurs="0" type="xs:string">
-                            <xs:annotation>
-                                <xs:documentation xml:lang="en">XML string containing component parameters.</xs:documentation>
-                            </xs:annotation>
-                        </xs:element>
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0"/>
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0"/>
+                        <xs:element name="Actionscript" minOccurs="0"><xs:complexType><xs:sequence><xs:element name="script" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+                        <xs:element name="persistentData" type="tns:PersistentDataType" minOccurs="0"/>
+                        <xs:element name="dataBindingXML" type="xs:string" minOccurs="0"/>
+                        <xs:element name="parametersAsXML" type="xs:string" minOccurs="0"/>
                     </xs:sequence>
-                    <xs:attribute name="libraryItemName" type="xs:string" use="required">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Name of the library item.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="instanceName" type="xs:string" use="optional">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Name of the component instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="centerPoint3DX" type="xs:float" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">X coordinate of the 3D center point.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="centerPoint3DY" type="xs:float" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Y coordinate of the 3D center point.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="centerPoint3DZ" type="xs:float" use="optional" default="0">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Z coordinate of the 3D center point.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="uniqueID" type="xs:nonNegativeInteger" use="optional">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">Unique ID of the component instance.</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:complexType>
+                    <xs:attribute name="libraryItemName" type="xs:string" use="required"/>
+                    <xs:attribute name="name" type="xs:string" use="optional"/>
+                    <xs:attribute name="uniqueID" type="xs:nonNegativeInteger" use="optional"/>
+                    <xs:attribute name="locked" type="xs:boolean" use="optional" default="false"/>
+                    <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
+                    <xs:attributeGroup ref="tns:AccessibilityAttributeGroup"/>
+                <xs:attribute name="referenceID" type="tns:ReferenceType"/>
+</xs:complexType>
             </xs:element>
-        </xs:choice>
+</xs:choice>
     </xs:complexType>
+
+    <xs:complexType name="IKContourType">
+                                <xs:sequence>
+                                    <xs:element name="dataPoints">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">List of data points defining the contour.</xs:documentation>
+                                        </xs:annotation>
+                                        <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="DataPoint" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                        <xs:attribute name="integerPoint">
+                                                            <xs:annotation>
+                                                                <xs:documentation xml:lang="en">Coordinates of the data point in float format "#x, #y".</xs:documentation>
+                                                            </xs:annotation>
+                                                            <xs:simpleType>
+                                                                <xs:restriction base="xs:string">
+                                                                    <xs:pattern value="(#[0-9A-Fa-f]+(\.[0-9A-Fa-f]+)?|-?\d+(\.\d+)?), (#[0-9A-Fa-f]+(\.[0-9A-Fa-f]+)?|-?\d+(\.\d+)?)"/>
+                                                                </xs:restriction>
+                                                            </xs:simpleType>
+                                                        </xs:attribute>
+                                                    </xs:complexType>
+                                                </xs:element>
+                                            </xs:sequence>
+                                        </xs:complexType>
+                                    </xs:element>
+                                    <xs:element name="matrix" type="tns:MatrixContainerType">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Transformation matrix for the contour.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:element>
+                                    <xs:group ref="tns:StrokeGroup" minOccurs="0">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Stroke properties for the contour.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:group>
+                                    <xs:group ref="tns:FillGroup" minOccurs="0">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Fill properties for the contour.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:group>
+                                    <xs:element name="IKContainedContour" type="tns:IKContourType" minOccurs="0"/>
+    <xs:element name="NextContour" type="tns:IKContourType" minOccurs="0"/>
+</xs:sequence>
+                                <xs:attribute name="interior" type="xs:boolean" default="false">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Whether the contour is interior.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="orientation" default="counter clockwise">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Orientation of the contour.</xs:documentation>
+                                    </xs:annotation>
+                                    <xs:simpleType>
+                                        <xs:restriction base="xs:string">
+                                            <xs:enumeration value="counter clockwise"/>
+                                            <xs:enumeration value="clockwise"/>
+                                            <xs:enumeration value="no area"></xs:enumeration>
+                                        </xs:restriction>
+                                    </xs:simpleType>
+                                </xs:attribute>
+                                <xs:attribute name="rectLeft" type="xs:integer" default="0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Left coordinate of the contour's bounding rectangle.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="rectTop" type="xs:integer" default="0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Top coordinate of the contour's bounding rectangle.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="rectRight" type="xs:integer" default="0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Right coordinate of the contour's bounding rectangle.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="rectBottom" type="xs:integer" default="0">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Bottom coordinate of the contour's bounding rectangle.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="fillSelected" type="xs:boolean" default="false">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Whether the fill is selected.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="strokeHasSelection" type="xs:boolean" default="false">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Whether the stroke has selection.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="strokeFullySelected" type="xs:boolean" default="false">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Whether the stroke is fully selected.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                            </xs:complexType>
+
+    <xs:attributeGroup name="IKStateEaseAttributes">
+        <xs:attribute name="easeIn" default="0"><xs:simpleType><xs:restriction base="xs:integer"><xs:minInclusive value="-100"/><xs:maxInclusive value="100"/></xs:restriction></xs:simpleType></xs:attribute>
+        <xs:attribute name="easeOut" default="0"><xs:simpleType><xs:restriction base="xs:integer"><xs:minInclusive value="-100"/><xs:maxInclusive value="100"/></xs:restriction></xs:simpleType></xs:attribute>
+        <xs:attribute name="easeValue" default="0">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Easing value for the IK state. Range: -100 to 100.</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:double">
+                    <xs:minInclusive value="-100"/>
+                    <xs:maxInclusive value="100"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="easeType" use="optional" default="none">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Type of easing applied to the IK state.</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="none">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">None.</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="simple quadratic">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Simple (Slow).</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="simple cubic">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Simple (Medium).</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="simple quartic">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Simple (Fast).</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="simple quintic">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Simple (Fastest).</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="dual quadratic">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Stop and Start (Slow).</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="dual cubic">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Stop and Start (Medium).</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="dual quartic">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Stop and Start (Fast).</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="dual quintic">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Stop and Start (Fastest).</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
 
     <xs:complexType name="IKNodeType">
         <xs:annotation>
@@ -1967,10 +2351,15 @@ elementFormDefault="qualified"
                                         <xs:documentation xml:lang="en">Angle of the bone in this state.</xs:documentation>
                                     </xs:annotation>
                                 </xs:attribute>
+                                <xs:attributeGroup ref="tns:IKStateEaseAttributes"/>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
                 </xs:complexType>
+            </xs:element>
+            <xs:element name="pins" minOccurs="0">
+                <xs:annotation><xs:documentation xml:lang="en">Archived IK pin positions in XFL integer-point notation.</xs:documentation></xs:annotation>
+                <xs:complexType><xs:sequence><xs:element name="Pin" maxOccurs="unbounded"><xs:complexType><xs:attribute name="integerPoint" type="xs:string" use="required"/></xs:complexType></xs:element></xs:sequence></xs:complexType>
             </xs:element>
             <xs:element name="worldMatrix" minOccurs="0" maxOccurs="1" type="tns:MatrixContainerType"/>
             <xs:element name="childNodes" minOccurs="0" maxOccurs="1">
@@ -2020,18 +2409,18 @@ elementFormDefault="qualified"
                 <xs:documentation xml:lang="en">Reference ID of the bone.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="speed" use="optional" default="1.0">
+        <xs:attribute name="speed" use="optional" default="100.0">
             <xs:annotation>
-                <xs:documentation xml:lang="en">Speed of the bone. Range 0.0 to 1.0.</xs:documentation>
+                <xs:documentation xml:lang="en">Speed of the bone. Native XFL range 0.0 to 100.0; archived normalized values usually use 0.0 to 1.0.</xs:documentation>
             </xs:annotation>
             <xs:simpleType>
                 <xs:restriction base="xs:float">
                     <xs:minInclusive value="0.0"/>
-                    <xs:maxInclusive value="1.0"/>
+                    <xs:maxInclusive value="100.0"/>
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
-        <xs:attribute name="rotationEnabled" type="xs:boolean" use="optional" default="false">
+        <xs:attribute name="rotationEnabled" type="xs:boolean" use="optional" default="true">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Enable joint rotation.</xs:documentation>
             </xs:annotation>
@@ -2116,6 +2505,9 @@ elementFormDefault="qualified"
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
+        <xs:attribute name="locked" type="xs:boolean" default="false">
+            <xs:annotation><xs:documentation xml:lang="en">Editor lock state of this IK node.</xs:documentation></xs:annotation>
+        </xs:attribute>
         <xs:attributeGroup ref="tns:SelectableAttributeGroup"></xs:attributeGroup>
     </xs:complexType>
 
@@ -2184,22 +2576,22 @@ elementFormDefault="qualified"
                                                     <xs:documentation xml:lang="en">Starting point of the curves in morph segment in second shape.</xs:documentation>
                                                 </xs:annotation>
                                             </xs:attribute>
-                                            <xs:attribute name="strokeIndex1" type="xs:nonNegativeInteger" use="optional" default="0">
+                                            <xs:attribute name="strokeIndex1" type="xs:integer" use="optional" default="-1">
                                                 <xs:annotation>
                                                     <xs:documentation xml:lang="en">Index of the stroke in the first shape.</xs:documentation>
                                                 </xs:annotation>
                                             </xs:attribute>
-                                            <xs:attribute name="strokeIndex2" type="xs:nonNegativeInteger" use="optional" default="0">
+                                            <xs:attribute name="strokeIndex2" type="xs:integer" use="optional" default="-1">
                                                 <xs:annotation>
                                                     <xs:documentation xml:lang="en">Index of the stroke in the second shape.</xs:documentation>
                                                 </xs:annotation>
                                             </xs:attribute>
-                                            <xs:attribute name="fillIndex1" type="xs:nonNegativeInteger" use="optional" default="0">
+                                            <xs:attribute name="fillIndex1" type="xs:integer" use="optional" default="-1">
                                                 <xs:annotation>
                                                     <xs:documentation xml:lang="en">Index of the fill in the first shape.</xs:documentation>
                                                 </xs:annotation>
                                             </xs:attribute>
-                                            <xs:attribute name="fillIndex2" type="xs:nonNegativeInteger" use="optional" default="0">
+                                            <xs:attribute name="fillIndex2" type="xs:integer" use="optional" default="-1">
                                                 <xs:annotation>
                                                     <xs:documentation xml:lang="en">Index of the fill in the second shape.</xs:documentation>
                                                 </xs:annotation>
@@ -2211,9 +2603,19 @@ elementFormDefault="qualified"
                         </xs:element>
                         <xs:element name="morphHintsList">
                             <xs:annotation>
-                                <xs:documentation xml:lang="en">Unsure: Unknown purpose and structure.</xs:documentation>
+                                <xs:documentation xml:lang="en">Shape-tween hint pairs. Point attributes use the native XFL integer-point coordinate format.</xs:documentation>
                             </xs:annotation>
-                            <xs:complexType/>
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="MorphHint" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                            <xs:attribute name="startPoint" type="xs:string" use="required"/>
+                                            <xs:attribute name="endPoint" type="xs:string" use="required"/>
+                                            <xs:attribute name="key" type="xs:int" default="-1"/>
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                            </xs:complexType>
                         </xs:element>
                     </xs:sequence>
                     <xs:attribute name="mappingType" default="distributive">
@@ -2337,6 +2739,7 @@ elementFormDefault="qualified"
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <xs:element name="motionObjectXML" minOccurs="0"><xs:complexType><xs:sequence><xs:element name="AnimationCore" type="tns:AnimationCoreType"/></xs:sequence></xs:complexType></xs:element>
             <xs:element name="elements" maxOccurs="1" type="tns:ElementListType" />
             <xs:element name="betweenFrameMatrixList" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
@@ -2365,174 +2768,17 @@ elementFormDefault="qualified"
                                                     <xs:documentation xml:lang="en">Duration of the IK state in frames.</xs:documentation>
                                                 </xs:annotation>
                                             </xs:attribute>
-                                            <xs:attribute name="easeValue" default="0">
-                                                <xs:annotation>
-                                                    <xs:documentation xml:lang="en">Easing value for the IK state. Range: -100 to 100.</xs:documentation>
-                                                </xs:annotation>
-                                                <xs:simpleType>
-                                                    <xs:restriction base="xs:integer">
-                                                        <xs:minInclusive value="-100"/>
-                                                        <xs:maxInclusive value="100"/>
-                                                    </xs:restriction>
-                                                </xs:simpleType>
-                                            </xs:attribute>
-                                            <xs:attribute name="easeType" use="optional" default="none">
-                                                <xs:annotation>
-                                                    <xs:documentation xml:lang="en">Type of easing applied to the IK state.</xs:documentation>
-                                                </xs:annotation>
-                                                <xs:simpleType>
-                                                    <xs:restriction base="xs:string">
-                                                        <xs:enumeration value="none">
-                                                            <xs:annotation>
-                                                                <xs:documentation xml:lang="en">None.</xs:documentation>
-                                                            </xs:annotation>
-                                                        </xs:enumeration>
-                                                        <xs:enumeration value="simple quadratic">
-                                                            <xs:annotation>
-                                                                <xs:documentation xml:lang="en">Simple (Slow).</xs:documentation>
-                                                            </xs:annotation>
-                                                        </xs:enumeration>
-                                                        <xs:enumeration value="simple cubic">
-                                                            <xs:annotation>
-                                                                <xs:documentation xml:lang="en">Simple (Medium).</xs:documentation>
-                                                            </xs:annotation>
-                                                        </xs:enumeration>
-                                                        <xs:enumeration value="simple quartic">
-                                                            <xs:annotation>
-                                                                <xs:documentation xml:lang="en">Simple (Fast).</xs:documentation>
-                                                            </xs:annotation>
-                                                        </xs:enumeration>
-                                                        <xs:enumeration value="simple quintic">
-                                                            <xs:annotation>
-                                                                <xs:documentation xml:lang="en">Simple (Fastest).</xs:documentation>
-                                                            </xs:annotation>
-                                                        </xs:enumeration>
-                                                        <xs:enumeration value="dual quadratic">
-                                                            <xs:annotation>
-                                                                <xs:documentation xml:lang="en">Stop and Start (Slow).</xs:documentation>
-                                                            </xs:annotation>
-                                                        </xs:enumeration>
-                                                        <xs:enumeration value="dual cubic">
-                                                            <xs:annotation>
-                                                                <xs:documentation xml:lang="en">Stop and Start (Medium).</xs:documentation>
-                                                            </xs:annotation>
-                                                        </xs:enumeration>
-                                                        <xs:enumeration value="dual quartic">
-                                                            <xs:annotation>
-                                                                <xs:documentation xml:lang="en">Stop and Start (Fast).</xs:documentation>
-                                                            </xs:annotation>
-                                                        </xs:enumeration>
-                                                        <xs:enumeration value="dual quintic">
-                                                            <xs:annotation>
-                                                                <xs:documentation xml:lang="en">Stop and Start (Fastest).</xs:documentation>
-                                                            </xs:annotation>
-                                                        </xs:enumeration>
-                                                    </xs:restriction>
-                                                </xs:simpleType>
-                                            </xs:attribute>
+                                            <xs:attributeGroup ref="tns:IKStateEaseAttributes"/>
                                         </xs:complexType>
                                     </xs:element>
                                 </xs:sequence>
                             </xs:complexType>
                         </xs:element>
-                        <xs:element name="IKContour" minOccurs="0" maxOccurs="1">
+                        <xs:element name="IKContour" type="tns:IKContourType" minOccurs="0" maxOccurs="1">
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">Contour data for the IK tree.</xs:documentation>
                             </xs:annotation>
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="dataPoints">
-                                        <xs:annotation>
-                                            <xs:documentation xml:lang="en">List of data points defining the contour.</xs:documentation>
-                                        </xs:annotation>
-                                        <xs:complexType>
-                                            <xs:sequence>
-                                                <xs:element name="DataPoint" maxOccurs="unbounded">
-                                                    <xs:complexType>
-                                                        <xs:attribute name="integerPoint">
-                                                            <xs:annotation>
-                                                                <xs:documentation xml:lang="en">Coordinates of the data point in float format "#x, #y".</xs:documentation>
-                                                            </xs:annotation>
-                                                            <xs:simpleType>
-                                                                <xs:restriction base="xs:string">
-                                                                    <xs:pattern value="(#[0-9A-Fa-f]+(\.[0-9A-Fa-f]+)?|-?\d+(\.\d+)?), (#[0-9A-Fa-f]+(\.[0-9A-Fa-f]+)?|-?\d+(\.\d+)?)"/>
-                                                                </xs:restriction>
-                                                            </xs:simpleType>
-                                                        </xs:attribute>
-                                                    </xs:complexType>
-                                                </xs:element>                                                
-                                            </xs:sequence>
-                                        </xs:complexType>
-                                    </xs:element>
-                                    <xs:element name="matrix" type="tns:MatrixContainerType">
-                                        <xs:annotation>
-                                            <xs:documentation xml:lang="en">Transformation matrix for the contour.</xs:documentation>
-                                        </xs:annotation>
-                                    </xs:element>
-                                    <xs:group ref="tns:StrokeGroup">
-                                        <xs:annotation>
-                                            <xs:documentation xml:lang="en">Stroke properties for the contour.</xs:documentation>
-                                        </xs:annotation>
-                                    </xs:group>
-                                    <xs:group ref="tns:FillGroup">
-                                        <xs:annotation>
-                                            <xs:documentation xml:lang="en">Fill properties for the contour.</xs:documentation>
-                                        </xs:annotation>
-                                    </xs:group>
-                                </xs:sequence>
-                                <xs:attribute name="interior" type="xs:boolean" default="false">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Whether the contour is interior.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                                <xs:attribute name="orientation" default="counter clockwise">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Orientation of the contour.</xs:documentation>
-                                    </xs:annotation>
-                                    <xs:simpleType>
-                                        <xs:restriction base="xs:string">                                            
-                                            <xs:enumeration value="counter clockwise"/>
-                                            <xs:enumeration value="clockwise"/>
-                                            <xs:enumeration value="no area"></xs:enumeration>
-                                        </xs:restriction>
-                                    </xs:simpleType>
-                                </xs:attribute>
-                                <xs:attribute name="rectLeft" type="xs:integer" default="0">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Left coordinate of the contour's bounding rectangle.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                                <xs:attribute name="rectTop" type="xs:integer" default="0">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Top coordinate of the contour's bounding rectangle.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                                <xs:attribute name="rectRight" type="xs:integer" default="0">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Right coordinate of the contour's bounding rectangle.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                                <xs:attribute name="rectBottom" type="xs:integer" default="0">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Bottom coordinate of the contour's bounding rectangle.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                                <xs:attribute name="fillSelected" type="xs:boolean" default="false">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Whether the fill is selected.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                                <xs:attribute name="strokeHasSelection" type="xs:boolean" default="false">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Whether the stroke has selection.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                                <xs:attribute name="strokeFullySelected" type="xs:boolean" default="false">
-                                    <xs:annotation>
-                                        <xs:documentation xml:lang="en">Whether the stroke is fully selected.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:attribute>
-                            </xs:complexType>
+
                         </xs:element>
                     </xs:sequence>
                     <xs:attribute name="name" type="xs:string" use="required">
@@ -2607,7 +2853,10 @@ elementFormDefault="qualified"
                 <xs:documentation xml:lang="en">Duration of the frame in frames.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="keyMode" type="xs:integer" use="required">
+        <xs:attribute name="isMotionObject" type="xs:boolean" use="optional"/>
+<xs:attribute name="visibleAnimationKeyframes" type="xs:unsignedInt" use="optional"/>
+<xs:attribute name="tweenInstanceName" type="xs:string" use="optional"/>
+<xs:attribute name="keyMode" type="xs:integer" use="required">
             <xs:annotation>
                 <xs:documentation xml:lang="en"><![CDATA[
         <h1>
@@ -2701,6 +2950,11 @@ elementFormDefault="qualified"
         <xs:attribute name="motionTweenOrientToPath" type="xs:boolean" use="optional" default="false">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Whether the motion tween is oriented to the path.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="motionTweenScale" type="xs:boolean" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Whether scaling is interpolated in a classic motion tween. Also encoded by bit 0x0200 of keyMode.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="motionTweenSync" type="xs:boolean" use="optional" default="false">
@@ -2821,6 +3075,7 @@ elementFormDefault="qualified"
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
+        <xs:attribute name="bookmark" type="xs:boolean" default="false"/>
         <xs:attribute name="isIKPose" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Indicates if the frame is an Inverse Kinematics (IK) pose.</xs:documentation>
@@ -2858,7 +3113,8 @@ elementFormDefault="qualified"
                                     </xs:element>
                                 </xs:sequence>
 
-                                <xs:attribute name="name" type="xs:string" use="required">
+
+<xs:attribute name="name" type="xs:string" use="required">
                                     <xs:annotation>
                                         <xs:documentation xml:lang="en">Name of the layer.</xs:documentation>
                                     </xs:annotation>
@@ -2969,7 +3225,8 @@ elementFormDefault="qualified"
                 <xs:documentation xml:lang="en">Current frame index in the timeline. (0-based)</xs:documentation>
             </xs:annotation>
         </xs:attribute>        
-    </xs:complexType>
+    <xs:attribute name="guides" type="xs:string" use="optional"/>
+</xs:complexType>
 
 
     
@@ -3207,6 +3464,11 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Indicates whether smoothing is allowed for the bitmap when scaled.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
+                                    <xs:attribute name="useDeblocking" type="xs:boolean" use="optional" default="false">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Whether JPEG deblocking is enabled for the bitmap. Since: Flash CS4.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
                                     <xs:attribute name="isJPEG" type="xs:boolean" use="optional" default="false">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Indicates whether the bitmap is in JPEG format.</xs:documentation>
@@ -3247,7 +3509,7 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Frames per second of the video.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                    <xs:attribute name="channels" type="xs:integer" use="required">
+                                    <xs:attribute name="channels" type="xs:integer" use="optional" default="1">
                                         <xs:annotation>
                                             <xs:documentation xml:lang="en">Unsure: Number of audio channels in the video.</xs:documentation>
                                         </xs:annotation>
@@ -3267,7 +3529,9 @@ elementFormDefault="qualified"
                                             <xs:documentation xml:lang="en">Length of the video in seconds.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
-                                </xs:complexType>
+                                <xs:attribute name="rate" type="xs:float" use="optional"/>
+                    <xs:attribute name="bits" type="xs:integer" use="optional"/>
+                    </xs:complexType>
                             </xs:element>
                             <xs:element name="DOMSoundItem">
                                 <xs:complexType>
@@ -3360,7 +3624,9 @@ elementFormDefault="qualified"
                                         </xs:annotation>
                                     </xs:attribute>
                                     <xs:attributeGroup ref="tns:LinkageAttributeGroup"></xs:attributeGroup>
-                                </xs:complexType>
+                                <xs:attribute name="deviceSoundHRef" type="xs:string" use="optional"/>
+                    <xs:attribute name="use8kSampleRate" type="xs:boolean" use="optional" default="false"/>
+                    </xs:complexType>
                             </xs:element>
                             <xs:element name="DOMCompiledClipItem">
                                 <xs:complexType>
@@ -3371,6 +3637,7 @@ elementFormDefault="qualified"
                                                 <xs:sequence>
                                                     <xs:element name="CustomIcon" maxOccurs="unbounded">
                                                         <xs:complexType>
+                                                            <xs:sequence><xs:element name="colorTable" type="tns:CustomIconColorTableType" minOccurs="0"/></xs:sequence>
                                                             <xs:attribute name="rowByteCount" type="xs:integer" use="required"/>
                                                             <xs:attribute name="colorDepth" type="xs:integer" use="required"/>
                                                             <xs:attribute name="width" type="xs:positiveInteger" use="required"/>
@@ -3416,7 +3683,11 @@ elementFormDefault="qualified"
                                     <xs:attribute name="playerVersion" type="xs:integer" use="optional" default="9"/>
                                     <xs:attribute name="actionscriptVersion" type="xs:integer" use="optional" default="3"/>
                                     <xs:attribute name="hashKey" type="xs:string" use="optional"/>                                                                   
-                                </xs:complexType>
+                                <xs:attribute name="movieRectLeft" type="xs:integer" use="optional" default="0"/>
+<xs:attribute name="movieRectRight" type="xs:integer" use="optional" default="0"/>
+<xs:attribute name="movieRectTop" type="xs:integer" use="optional" default="0"/>
+<xs:attribute name="movieRectBottom" type="xs:integer" use="optional" default="0"/>
+</xs:complexType>
                             </xs:element>
                         </xs:choice>
                     </xs:complexType>
@@ -3469,153 +3740,21 @@ elementFormDefault="qualified"
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
-                <xs:element name="swatchLists" minOccurs="0" maxOccurs="1">
-                    <xs:annotation>
-                        <xs:documentation xml:lang="en">List of color swatch lists in the document.</xs:documentation>
-                    </xs:annotation>
+                <xs:element name="swatchLists" minOccurs="0">
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="swatchList" minOccurs="0" maxOccurs="unbounded">
-                                <xs:annotation>
-                                    <xs:documentation xml:lang="en">A list of color swatches.</xs:documentation>
-                                </xs:annotation>
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="swatches">
-                                            <xs:annotation>
-                                                <xs:documentation xml:lang="en">Container for swatch items.</xs:documentation>
-                                            </xs:annotation>
-                                            <xs:complexType>
-                                                <xs:sequence>
-                                                    <xs:element name="SolidSwatchItem" minOccurs="0" maxOccurs="unbounded">
-                                                        <xs:annotation>
-                                                            <xs:documentation xml:lang="en">A solid color swatch item.</xs:documentation>
-                                                        </xs:annotation>
-                                                        <xs:complexType>
-                                                            <xs:attribute name="color" type="tns:ColorType" use="optional" default="#000000">
-                                                                <xs:annotation>
-                                                                    <xs:documentation xml:lang="en">Color of the swatch.</xs:documentation>
-                                                                </xs:annotation>
-                                                            </xs:attribute>
-                                                            <xs:attribute name="alpha" type="xs:float" use="optional" default="1.0">
-                                                                <xs:annotation>
-                                                                    <xs:documentation xml:lang="en">Alpha (opacity) of the swatch color.</xs:documentation>
-                                                                </xs:annotation>
-                                                            </xs:attribute>
-                                                            <xs:attribute name="hue" use="optional" default="0">
-                                                                <xs:annotation>
-                                                                    <xs:documentation xml:lang="en">Hue adjustment for the swatch color.</xs:documentation>
-                                                                </xs:annotation>
-                                                                <xs:simpleType>
-                                                                    <xs:restriction base="xs:integer">
-                                                                        <xs:minInclusive value="0"/>
-                                                                        <xs:maxInclusive value="240"/>
-                                                                    </xs:restriction>
-                                                                </xs:simpleType>
-                                                            </xs:attribute>
-                                                            <xs:attribute name="saturation" use="optional" default="0">
-                                                                <xs:annotation>
-                                                                    <xs:documentation xml:lang="en">Saturation adjustment for the swatch color.</xs:documentation>
-                                                                </xs:annotation>
-                                                                <xs:simpleType>
-                                                                    <xs:restriction base="xs:integer">
-                                                                        <xs:minInclusive value="0"/>
-                                                                        <xs:maxInclusive value="240"/>
-                                                                    </xs:restriction>
-                                                                </xs:simpleType>
-                                                            </xs:attribute>
-                                                            <xs:attribute name="brightness" use="optional" default="0">
-                                                                <xs:annotation>
-                                                                    <xs:documentation xml:lang="en">Brightness adjustment for the swatch color.</xs:documentation>
-                                                                </xs:annotation>
-                                                                <xs:simpleType>
-                                                                    <xs:restriction base="xs:integer">
-                                                                        <xs:minInclusive value="0"/>
-                                                                        <xs:maxInclusive value="240"/>
-                                                                    </xs:restriction>
-                                                                </xs:simpleType>
-                                                            </xs:attribute>
-                                                        </xs:complexType>
-                                                    </xs:element>
-                                                </xs:sequence>
-                                            </xs:complexType>
-                                        </xs:element>
-                                        
-                                    </xs:sequence>                                    
-                                </xs:complexType>
-                            </xs:element>
+                            <xs:element name="swatchList" type="tns:SwatchListType" minOccurs="0" maxOccurs="unbounded"/>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
-                <xs:element name="extendedSwatchLists" minOccurs="0" maxOccurs="1">
-                    <xs:annotation>
-                        <xs:documentation xml:lang="en">Extended swatch lists for the document.</xs:documentation>
-                    </xs:annotation>
+                <xs:element name="extendedSwatchLists" minOccurs="0">
                     <xs:complexType>
                         <xs:sequence>
-                            <xs:element name="swatchList">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="swatches">
-                                            <xs:complexType>
-                                                <xs:choice minOccurs="0" maxOccurs="unbounded">
-                                                    <xs:element name="LinearGradientSwatchItem">
-                                                        <xs:complexType>
-                                                            <xs:sequence>
-                                                                <xs:element name="GradientEntry" type="tns:GradientEntryType" minOccurs="2" maxOccurs="unbounded"/>
-                                                            </xs:sequence>
-                                                            <xs:attributeGroup ref="tns:GradientAttributeGroup"></xs:attributeGroup>
-                                                        </xs:complexType>
-                                                    </xs:element>
-                                                    <xs:element name="RadialGradientSwatchItem">
-                                                        <xs:complexType>
-                                                            <xs:sequence>
-                                                                <xs:element name="GradientEntry" type="tns:GradientEntryType" minOccurs="2" maxOccurs="unbounded"/>
-                                                            </xs:sequence>
-                                                            <xs:attributeGroup ref="tns:GradientAttributeGroup"></xs:attributeGroup>
-                                                        </xs:complexType>
-                                                    </xs:element>
-                                                </xs:choice>
-                                            </xs:complexType>
-                                        </xs:element>
-                                    </xs:sequence>
-                                </xs:complexType>
-                            </xs:element>
+                            <xs:element name="swatchList" type="tns:SwatchListType" minOccurs="0" maxOccurs="unbounded"/>
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
-                <xs:element name="persistentData" minOccurs="0" maxOccurs="1">
-                    <xs:annotation>
-                        <xs:documentation xml:lang="en"><![CDATA[
-                            <p>Persistent data associated with the document.</p>
-                            <p>For example Inverse Kinematics stores there "ikBoneCount", "ikTreeCount", "ikNodeCount" </p>
-
-                        ]]></xs:documentation>
-                    </xs:annotation>
-                    <xs:complexType>
-                        <xs:sequence>
-                            <xs:element name="PD" minOccurs="0" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:attribute name="n" type="xs:string" use="required">
-                                        <xs:annotation>
-                                            <xs:documentation xml:lang="en">Name of the persistent data.</xs:documentation>
-                                        </xs:annotation>
-                                    </xs:attribute>
-                                    <xs:attribute name="t" type="xs:string" use="required">
-                                        <xs:annotation>
-                                            <xs:documentation xml:lang="en">Type of the persistent data. i=integer</xs:documentation>
-                                        </xs:annotation>
-                                    </xs:attribute>
-                                    <xs:attribute name="v" type="xs:string" use="required">
-                                        <xs:annotation>
-                                            <xs:documentation xml:lang="en">Value of the persistent data.</xs:documentation>
-                                        </xs:annotation>
-                                    </xs:attribute>
-                                </xs:complexType>
-                            </xs:element>
-                        </xs:sequence>
-                    </xs:complexType>
-                </xs:element>
+                <xs:element name="persistentData" type="tns:PersistentDataType" minOccurs="0"/>
                 <xs:element name="scripts" minOccurs="0" maxOccurs="1">
                     <xs:annotation>
                         <xs:documentation xml:lang="en">Unsure: Scripts associated with the document. Since: Animate 2020?</xs:documentation>
@@ -3818,12 +3957,12 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">Indicates if snap alignment is enabled.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="gridSpacingX" type="xs:positiveInteger" default="10">
+            <xs:attribute name="gridSpacingX" type="tns:PositivePixelSpacingType" default="10">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Horizontal spacing of the grid.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="gridSpacingY" type="xs:positiveInteger" default="10">
+            <xs:attribute name="gridSpacingY" type="tns:PositivePixelSpacingType" default="10">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Vertical spacing of the grid.</xs:documentation>
                 </xs:annotation>
@@ -3963,6 +4102,10 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">URL of the shared library.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+            <xs:attribute name="guidesColor" type="tns:ColorType" default="#58FFFF"/>
+            <xs:attribute name="guidesVisible" type="xs:boolean" default="true"/>
+            <xs:attribute name="guidesLocked" type="xs:boolean" default="false"/>
+            <xs:attribute name="guidesSnapTo" type="xs:boolean" default="true"/>
             <xs:attribute name="guidesSnapAccuracy" default="Normal">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Accuracy of snapping to guides.</xs:documentation>
@@ -3975,17 +4118,20 @@ elementFormDefault="qualified"
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
+            <xs:attribute name="adjustViewAngle3D" type="xs:boolean" default="true">
+                <xs:annotation><xs:documentation xml:lang="en">Native document 3D view-angle adjustment flag.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="viewAngle3D" type="xs:float" use="optional">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">3D view angle of the document.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>            
-            <xs:attribute name="vanishingPoint3DX" type="xs:float" use="optional" default="0.0">
+            <xs:attribute name="vanishingPoint3DX" type="xs:float" use="optional" default="275.0">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">X coordinate of the 3D vanishing point.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="vanishingPoint3DY" type="xs:float" use="optional" default="0.0">
+            <xs:attribute name="vanishingPoint3DY" type="xs:float" use="optional" default="200.0">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Y coordinate of the 3D vanishing point.</xs:documentation>
                 </xs:annotation>
@@ -4005,15 +4151,13 @@ elementFormDefault="qualified"
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
+        <xs:attributeGroup ref="tns:AccessibilityAttributeGroup"/>
         </xs:complexType>
     </xs:element>
     
 
-    <xs:element name="DOMSymbolItem">
-        <xs:annotation>
-            <xs:documentation xml:lang="en">Represents a symbol in the DOM.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
+    <xs:element name="DOMSymbolItem" type="tns:DOMSymbolItemType"/>
+<xs:complexType name="DOMSymbolItemType">
             <xs:sequence>
                 <xs:element name="timeline">
                     <xs:annotation>
@@ -4045,7 +4189,8 @@ elementFormDefault="qualified"
                     <xs:documentation xml:lang="en">Type of the symbol.</xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="lastModified" type="xs:integer" use="optional">
+            <xs:attribute name="sourceLastModified" type="xs:integer" use="optional"/>
+<xs:attribute name="lastModified" type="xs:integer" use="optional">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Timestamp of the last modification of the symbol.</xs:documentation>
                 </xs:annotation>
@@ -4077,5 +4222,329 @@ elementFormDefault="qualified"
                 </xs:annotation>
             </xs:attribute>
         </xs:complexType>
-    </xs:element>
+    <xs:element name="DOMComponentItem"><xs:complexType><xs:complexContent><xs:extension base="tns:DOMSymbolItemType">
+        <xs:sequence>
+            <xs:element name="parametersAsXML" type="xs:string" minOccurs="0"/>
+            <xs:element name="classProperties" type="xs:string" minOccurs="0"/>
+<xs:element name="customIcon" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="CustomIcon" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:sequence><xs:element name="colorTable" type="tns:CustomIconColorTableType" minOccurs="0"/></xs:sequence>
+                                                            <xs:attribute name="rowByteCount" type="xs:integer" use="required"/>
+                                                            <xs:attribute name="colorDepth" type="xs:integer" use="required"/>
+                                                            <xs:attribute name="width" type="xs:positiveInteger" use="required"/>
+                                                            <xs:attribute name="height" type="xs:positiveInteger" use="required"/>
+                                                            <xs:attribute name="frameLeft" type="xs:integer" use="optional" default="0"/>
+                                                            <xs:attribute name="frameTop" type="xs:integer" use="optional" default="0"/>
+                                                            <xs:attribute name="frameRight" type="xs:integer" use="required"/>
+                                                            <xs:attribute name="frameBottom" type="xs:integer" use="required"/>
+                                                            <xs:attribute name="isTransparent" type="xs:boolean" use="optional" default="false"/>
+                                                            <xs:attribute name="href" type="xs:string" use="required"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>        </xs:sequence>
+        <xs:attribute name="tooltip" type="xs:string" use="optional"/>
+        <xs:attribute name="customIconID" type="xs:integer" use="optional"/>
+        <xs:attribute name="actionscriptClass" type="xs:string" use="optional"/>
+        <xs:attribute name="editFrameIndex" type="xs:integer" use="optional"/>
+        <xs:attribute name="requiredMinimumPlayerVersion" type="xs:integer" use="optional"/>
+        <xs:attribute name="requiredMinimumASVersion" type="xs:integer" use="optional"/>
+        <xs:attribute name="parametersAreLocked" type="xs:boolean" use="optional"/>
+
+
+        <xs:attribute name="persistLivePreview11" type="xs:boolean" use="optional"/>
+        <xs:attribute name="swfScmHRef" type="xs:string" use="optional"/>
+        <xs:attribute name="swfScmSourceFilename" type="xs:string" use="optional"/>
+        <xs:attribute name="livePreviewScmHRef" type="xs:string" use="optional"/>
+        <xs:attribute name="livePreviewScmSourceFilename" type="xs:string" use="optional"/>
+        <xs:attribute name="definitionScmHRef" type="xs:string" use="optional"/>
+        <xs:attribute name="definitionScmSourceFilename" type="xs:string" use="optional"/>
+        <xs:attribute name="livePreview11ScmHRef" type="xs:string" use="optional"/>
+        <xs:attribute name="livePreview11ScmSourceFilename" type="xs:string" use="optional"/>
+
+    </xs:extension></xs:complexContent></xs:complexType></xs:element>
+<xs:complexType name="AnimationCoreType"><xs:sequence>
+<xs:element name="TimeMap" minOccurs="0" maxOccurs="unbounded"><xs:complexType><xs:attribute name="strength" type="xs:double"/><xs:attribute name="type" type="xs:string"/></xs:complexType></xs:element>
+<xs:element name="metadata" minOccurs="0"><xs:complexType><xs:sequence>
+<xs:element name="names" minOccurs="0"><xs:complexType><xs:sequence><xs:element name="name" minOccurs="0" maxOccurs="unbounded"><xs:complexType><xs:attribute name="langID" type="xs:string"/><xs:attribute name="value" type="xs:string"/></xs:complexType></xs:element></xs:sequence></xs:complexType></xs:element>
+<xs:element name="Settings" minOccurs="0"><xs:complexType><xs:attribute name="orientToPath" type="xs:double"/><xs:attribute name="xformPtXOffsetPct" type="xs:double"/><xs:attribute name="xformPtYOffsetPct" type="xs:double"/><xs:attribute name="xformPtZOffsetPixels" type="xs:double"/></xs:complexType></xs:element></xs:sequence></xs:complexType></xs:element>
+<xs:element name="PropertyContainer" type="tns:MotionPropertyContainerType" minOccurs="0" maxOccurs="unbounded"/>
+</xs:sequence><xs:attribute name="TimeScale" type="xs:double"/><xs:attribute name="Version" type="xs:integer"/><xs:attribute name="duration" type="xs:double"/></xs:complexType>
+<xs:complexType name="MotionPropertyContainerType"><xs:choice minOccurs="0" maxOccurs="unbounded">
+<xs:element name="PropertyContainer" type="tns:MotionPropertyContainerType"/>
+<xs:element name="Property"><xs:complexType><xs:sequence><xs:element name="Keyframe" minOccurs="0" maxOccurs="unbounded"><xs:complexType><xs:attribute name="anchor" type="xs:string"/><xs:attribute name="next" type="xs:string"/><xs:attribute name="previous" type="xs:string"/><xs:attribute name="roving" type="xs:string"/><xs:attribute name="timevalue" type="xs:string"/></xs:complexType></xs:element></xs:sequence><xs:attribute name="enabled" type="xs:string"/><xs:attribute name="id" type="xs:string"/><xs:attribute name="ignoreTimeMap" type="xs:string"/><xs:attribute name="readonly" type="xs:string"/><xs:attribute name="visible" type="xs:string"/></xs:complexType></xs:element></xs:choice><xs:attribute name="id" type="xs:string"/></xs:complexType>
+<xs:complexType name="DOMSymbolInstanceType">
+                    <xs:sequence>
+                        <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Transformation matrix for the symbol instance.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Transformation point for the symbol instance.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="Actionscript" minOccurs="0" maxOccurs="1">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">ActionScript code associated with the symbol instance.</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="script" type="xs:string"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="filters" minOccurs="0" maxOccurs="1" type="tns:FilterListType">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">List of filters applied to the symbol instance.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="color" minOccurs="0" maxOccurs="1">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Color transformation applied to the symbol instance.</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:element name="Color">
+                                        <xs:complexType>
+                                            <xs:attribute name="redMultiplier" type="xs:float" use="optional" default="1.0">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Value to multiply red component with.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="greenMultiplier" type="xs:float" use="optional" default="1.0">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Value to multiply green component with.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="blueMultiplier" type="xs:float" use="optional" default="1.0">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Value to multiply blue component with.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="alphaMultiplier" type="xs:float" use="optional" default="1.0">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Value to multiply alpha component with.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="redOffset" type="xs:integer" use="optional" default="0">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Value to add to red component.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="greenOffset" type="xs:integer" use="optional" default="0">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Value to add to green component.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="blueOffset" type="xs:integer" use="optional" default="0">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Value to add to blue component.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="alphaOffset" type="xs:integer" use="optional" default="0">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Value to add to alpha component.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+
+                                            <xs:attribute name="brightness" use="optional">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Brightness adjustment value. -1 to 1</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:simpleType>
+                                                    <xs:restriction base="xs:float">
+                                                        <xs:minInclusive value="-1"/>
+                                                        <xs:maxInclusive value="1"/>
+                                                    </xs:restriction>
+                                                </xs:simpleType>
+                                            </xs:attribute>
+                                            <xs:attribute name="tintColor" type="tns:ColorType" use="optional">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Tint color value.</xs:documentation>
+                                                </xs:annotation>
+                                            </xs:attribute>
+                                            <xs:attribute name="tintMultiplier" use="optional">
+                                                <xs:annotation>
+                                                    <xs:documentation xml:lang="en">Amount of tint to apply. 0 to 1</xs:documentation>
+                                                </xs:annotation>
+                                                <xs:simpleType>
+                                                    <xs:restriction base="xs:float">
+                                                        <xs:minInclusive value="0"/>
+                                                        <xs:maxInclusive value="1"/>
+                                                    </xs:restriction>
+                                                </xs:simpleType>
+                                            </xs:attribute>
+                                        </xs:complexType>
+                                    </xs:element>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="MatteColor" minOccurs="0">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Background color used when caching as bitmap with opaque setting. Since: Flash CS5.5</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                                <xs:attribute name="color" type="tns:ColorType" use="optional" default="#ffffff"/>
+                            </xs:complexType>
+                        </xs:element>
+                    <xs:element name="persistentData" type="tns:PersistentDataType" minOccurs="0"/>
+</xs:sequence>
+                    <xs:attribute name="libraryItemName" type="xs:string" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Name of the symbol in the library.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="symbolType" type="tns:SymbolTypeType" use="optional" default="movie clip">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Type of the symbol instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="centerPoint3DX" type="xs:float" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">X coordinate of the 3D center point.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="centerPoint3DY" type="xs:float" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Y coordinate of the 3D center point.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="centerPoint3DZ" type="xs:float" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Z coordinate of the 3D center point.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="loop" use="optional" default="loop">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">If symbolType=graphic: Whether to loop.</xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="loop">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Loop through the frames indefinitely.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:enumeration>
+                                <xs:enumeration value="play once">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Play only once through the frames.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:enumeration>
+                                <xs:enumeration value="single frame">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Play only a single frame.</xs:documentation>
+                                    </xs:annotation>
+                                </xs:enumeration>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                    <xs:attribute name="firstFrame" type="xs:nonNegativeInteger" use="optional" default="0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">If symbolType=graphic: First frame to display.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="name" type="xs:string" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">If symbolType &lt;&gt; graphics: Name of the symbol instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="blendMode" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Blend mode for the symbol instance.</xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="normal"/>
+                                <xs:enumeration value="layer"/>
+                                <xs:enumeration value="multiply"/>
+                                <xs:enumeration value="screen"/>
+                                <xs:enumeration value="lighten"/>
+                                <xs:enumeration value="darken"/>
+                                <xs:enumeration value="difference"/>
+                                <xs:enumeration value="add"/>
+                                <xs:enumeration value="subtract"/>
+                                <xs:enumeration value="invert"/>
+                                <xs:enumeration value="alpha"/>
+                                <xs:enumeration value="erase"/>
+                                <xs:enumeration value="overlay"/>
+                                <xs:enumeration value="hardlight"/>
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                    <xs:attribute name="isVisible" type="xs:boolean" default="true">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Visibility of the symbol instance. Since: Flash CS5.5</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="locked" type="xs:boolean" default="false">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Whether the symbol instance is locked in the editor.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="trackAsMenu" type="xs:boolean" default="false">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Whether a button instance tracks mouse interaction as a menu.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="cacheAsBitmap" type="xs:boolean" default="false">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Whether to cache the symbol instance as a bitmap.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="bits32" type="xs:boolean" default="true">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Set to false when the cache as bitmap is opaque. Since: Flash CS5.5</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="matrix3D" type="tns:Matrix3DType" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">3D transformation matrix for the symbol instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="rotationX" type="xs:float" use="optional" default="0.0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Rotation around the X axis in degrees.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="rotationY" type="xs:float" use="optional" default="0.0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Rotation around the Y axis in degrees.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="rotationZ" type="xs:float" use="optional" default="0.0">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Rotation around the Z axis in degrees.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="referenceID" type="tns:ReferenceType" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Reference ID for the bitmap instance.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attributeGroup ref="tns:SelectableAttributeGroup"/>
+                <xs:attributeGroup ref="tns:AccessibilityAttributeGroup"/>
+        </xs:complexType>
+    <xs:complexType name="PersistentDataType"><xs:sequence>
+        <xs:element name="PD" minOccurs="0" maxOccurs="unbounded"><xs:complexType>
+            <xs:attribute name="n" type="xs:string" use="required"/>
+            <xs:attribute name="t" use="required"><xs:annotation><xs:documentation>String, integer, double, integer array, double array, and hexadecimal byte array.</xs:documentation></xs:annotation><xs:simpleType><xs:restriction base="xs:string">
+                <xs:enumeration value="s"/><xs:enumeration value="i"/><xs:enumeration value="d"/>
+                <xs:enumeration value="I"/><xs:enumeration value="D"/><xs:enumeration value="B"/>
+            </xs:restriction></xs:simpleType></xs:attribute>
+            <xs:attribute name="v" type="xs:string" use="required"/>
+        </xs:complexType></xs:element>
+    </xs:sequence></xs:complexType>
+    <xs:simpleType name="PositivePixelSpacingType"><xs:restriction base="xs:decimal"><xs:minExclusive value="0"/></xs:restriction></xs:simpleType>
+    <xs:complexType name="CustomIconColorTableType"><xs:sequence>
+        <xs:element name="ColorItem" minOccurs="0" maxOccurs="256"><xs:complexType>
+            <xs:attribute name="color" type="tns:ColorType" use="required"/>
+            <xs:attribute name="alpha" default="1"><xs:simpleType><xs:restriction base="xs:double"><xs:minInclusive value="0"/><xs:maxInclusive value="1"/></xs:restriction></xs:simpleType></xs:attribute>
+        </xs:complexType></xs:element>
+    </xs:sequence></xs:complexType>
 </xs:schema>
