@@ -10,7 +10,7 @@ elementFormDefault="qualified"
             <div xmlns="http://www.w3.org/1999/xhtml">
                 <h1>XFL Schema</h1>
                 <p>Schema describing XFL files used by Adobe Flash Professional CS5 and later.</p>
-                <p>Version: <b>1.0.0</b>, release date (2025-10-20)</p>
+                <p>Version: <b>2.1.0</b>, release date (2026-10-23)</p>
                 <p>Author: Jindra Petrik (JPEXS)</p>
                 <p>Contact: jindra.petrik@gmail.com</p>
                 <p>License: CC-BY-4.0</p>
@@ -18,6 +18,7 @@ elementFormDefault="qualified"
                 <p>Parts where I really don't know are marked with "Unsure" prefix.</p>
                 <h2>Changelog</h2>
                 <ul>
+                    <li><b>2026-10-23 v2.1.0</b>: Added DOMShape isDrawingObject. Added action editor breakpoints/collapse offsets, symbol animation settings and library/scene data-binding XML.  Added source Flash path/auto-update and media source-platform attributes. Added recursive SWC item dependencies and implementation/intrinsic attributes, plus special/bundled device-video metadata. Added SWC publish fields and CompressionType to the companion PublishSettings schema. Added PrinterSettings framesToPrint, labelPages, frameCountAcrossPage and storyBoardMargin with native defaults and ranges; storyboard margin is stored in twips. Added native printer page settings, layer/morph attributes, symbol display/center metadata, and component descriptions, parameter flags, Custom UI references and tasks.</li>
                     <li><b>2026-10-22 v2.0.0</b>: Shared complete IK state easing attributes (including integer easeIn/easeOut); corrected native IK speed range and XML default. Allowed IK contours with no fill or no stroke, matching native omission of absent paints. Added IK node pin containers and integer-point positions. Improved Inverse Kinematics (IK) support. Added missing group selection, symbol locking, button menu tracking, classic tween scaling and JPEG deblocking attributes. Added component/compiled-clip items and instances, primitive shapes, motion XML, guides and typed persistent values. Corrected accessibility, media/text properties, signed morph indexes, fractional grid spacing and document guide attributes. Added indexed custom-icon color tables. Allowed fractional IK easing strengths. Added a companion schema for publish profiles and legacy library-path fields. Defined morph hint endpoints and keys. Added 3D view adjustment and corrected vanishing-point defaults. Allowed cubic control nets without approximation points. Completed swatch sets: mixed colors, gradient matrices/focal points, empty stop lists, multiple sets and native HSB bounds. Added frame bookmarks. Added classic text screen spacing and corrected the aliasText default. Completed TLF placement, markup references, string metadata and fractional container dimensions. Allow numeric first-baseline offsets and the complete TextFlow grammar. Declare the archived IK node lock flag and correct the native rotation-enabled default to true. Add recursive IKContainedContour/NextContour structures.</li>
                     <li><b>2025-10-20 v1.0.0</b>: First stable release. Added license, minor changes.</li>
                     <li><b>2025-10-20 v0.0.2</b>: Inverse Kinematics (Bone tool).</li>
@@ -26,13 +27,51 @@ elementFormDefault="qualified"
             </div>
         </xs:documentation>
         <xs:appinfo>
-            <meta:version xmlns:meta="urn:metadata">2.0.0</meta:version>
-            <meta:releaseDate xmlns:meta="urn:metadata">2026-10-22</meta:releaseDate>
+            <meta:version xmlns:meta="urn:metadata">2.1.0</meta:version>
+            <meta:releaseDate xmlns:meta="urn:metadata">2026-10-23</meta:releaseDate>
         </xs:appinfo>
     </xs:annotation>
 
+
     <xs:import namespace="http://ns.adobe.com/textLayout/2008" schemaLocation="textLayout.xsd"/>
     <xs:import schemaLocation="PublishSettings.xsd"/>
+
+    <xs:complexType name="SwcItemType">
+        <xs:sequence>
+            <xs:element name="assetMap" minOccurs="0">
+                <xs:complexType><xs:sequence>
+                    <xs:element name="AssetMapItem" minOccurs="0" maxOccurs="unbounded">
+                        <xs:complexType><xs:sequence>
+                            <xs:element name="SwcItem" type="tns:SwcItemType"/>
+                        </xs:sequence><xs:attribute name="key" type="xs:string" use="required"/></xs:complexType>
+                    </xs:element>
+                </xs:sequence></xs:complexType>
+            </xs:element>
+            <xs:element name="includesList" minOccurs="0">
+                <xs:complexType><xs:sequence>
+                    <xs:element name="IncludesItem" type="tns:SwcItemType" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence></xs:complexType>
+            </xs:element>
+            <xs:element name="exportAfterList" minOccurs="0">
+                <xs:complexType><xs:sequence>
+                    <xs:element name="ExportAfterItem" type="tns:SwcItemType" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence></xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="implementation" type="xs:string" use="optional"/>
+        <xs:attribute name="version" type="xs:nonNegativeInteger" use="required"/>
+        <xs:attribute name="isTopLevel" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="intrinsicClass" type="xs:string" use="optional"/>
+        <xs:attribute name="intrinsicScript" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:simpleType name="MediaSourcePlatformType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="windows"/>
+            <xs:enumeration value="macintosh"/>
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:simpleType name="TlfNonnegativeNumberType"><xs:restriction base="xs:decimal"><xs:minInclusive value="0"/></xs:restriction></xs:simpleType>
     <xs:complexType name="SolidSwatchItemType">
@@ -783,6 +822,7 @@ elementFormDefault="qualified"
     </xs:complexType>
 
     <xs:attributeGroup name="MediaAttributeGroup">
+        <xs:attribute name="sourcePlatform" type="tns:MediaSourcePlatformType" use="optional" default="windows"/>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation xml:lang="en">Name of the media item. Unique among all media items. Example: "myfile.png"</xs:documentation>
@@ -2107,6 +2147,7 @@ elementFormDefault="qualified"
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>       
+                    <xs:attribute name="isDrawingObject" type="xs:boolean" default="false"/>
                     <xs:attribute name="isFloating" type="xs:boolean" default="false">
                         <xs:annotation>
                             <xs:documentation xml:lang="en">Unsure: Whether the shape is a floating shape.</xs:documentation>
@@ -2127,7 +2168,7 @@ elementFormDefault="qualified"
                     <xs:sequence>
                         <xs:element name="matrix" type="tns:MatrixContainerType" minOccurs="0"/>
                         <xs:element name="transformationPoint" type="tns:PointType" minOccurs="0"/>
-                        <xs:element name="Actionscript" minOccurs="0"><xs:complexType><xs:sequence><xs:element name="script" type="xs:string"/></xs:sequence></xs:complexType></xs:element>
+                        <xs:element name="Actionscript" type="tns:ActionscriptType" minOccurs="0"/>
                         <xs:element name="persistentData" type="tns:PersistentDataType" minOccurs="0"/>
                         <xs:element name="dataBindingXML" type="xs:string" minOccurs="0"/>
                         <xs:element name="parametersAsXML" type="xs:string" minOccurs="0"/>
@@ -2518,11 +2559,7 @@ elementFormDefault="qualified"
                 <xs:annotation>
                     <xs:documentation xml:lang="en">ActionScript code associated with the frame.</xs:documentation>
                 </xs:annotation>
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="script" type="xs:string"/>                                                                                                    
-                    </xs:sequence>
-                </xs:complexType>
+                <xs:complexType><xs:complexContent><xs:extension base="tns:ActionscriptType"/></xs:complexContent></xs:complexType>
             </xs:element>
             <xs:element name="MorphShape" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
@@ -2618,6 +2655,7 @@ elementFormDefault="qualified"
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
+                    <xs:attribute name="acceleration" default="0"><xs:annotation><xs:documentation xml:lang="en">Shape tween easing, independent of mappingType.</xs:documentation></xs:annotation><xs:simpleType><xs:restriction base="xs:int"><xs:minInclusive value="-100"/><xs:maxInclusive value="100"/></xs:restriction></xs:simpleType></xs:attribute>
                     <xs:attribute name="mappingType" default="distributive">
                         <xs:annotation>
                             <xs:documentation xml:lang="en">Type of mapping used for the shape tween.</xs:documentation>
@@ -3194,7 +3232,8 @@ elementFormDefault="qualified"
                                         <xs:documentation xml:lang="en">Indicates if the layer is visible.</xs:documentation>
                                     </xs:annotation>
                                 </xs:attribute>
-                                <xs:attribute name="heightMultiplier" type="xs:positiveInteger" default="1">
+                                <xs:attribute name="heightLiteral" type="xs:int" default="0"><xs:annotation><xs:documentation xml:lang="en">Explicit layer height; zero selects the standard height.</xs:documentation></xs:annotation></xs:attribute>
+        <xs:attribute name="heightMultiplier" type="xs:positiveInteger" default="1">
                                     <xs:annotation>
                                         <xs:documentation xml:lang="en">Height multiplier for the layer in the timeline UI. Bigger number = taller layer.</xs:documentation>
                                     </xs:annotation>
@@ -3225,7 +3264,8 @@ elementFormDefault="qualified"
                 <xs:documentation xml:lang="en">Current frame index in the timeline. (0-based)</xs:documentation>
             </xs:annotation>
         </xs:attribute>        
-    <xs:attribute name="guides" type="xs:string" use="optional"/>
+    <xs:attribute name="hrefDataBindingsFile" type="xs:string" use="optional"/>
+        <xs:attribute name="guides" type="xs:string" use="optional"/>
 </xs:complexType>
 
 
@@ -3236,6 +3276,8 @@ elementFormDefault="qualified"
                 Common linkage attributes for library items.
             </xs:documentation>
         </xs:annotation>
+        <xs:attribute name="sourceFlashFilepath" type="xs:string" use="optional"/>
+        <xs:attribute name="sourceAutoUpdate" type="xs:boolean" use="optional" default="false"/>
         <xs:attribute name="linkageExportForAS" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation xml:lang="en">
@@ -3511,7 +3553,7 @@ elementFormDefault="qualified"
                                     </xs:attribute>
                                     <xs:attribute name="channels" type="xs:integer" use="optional" default="1">
                                         <xs:annotation>
-                                            <xs:documentation xml:lang="en">Unsure: Number of audio channels in the video.</xs:documentation>
+                                            <xs:documentation xml:lang="en">Number of audio channels in the video.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
                                     <xs:attribute name="width" type="xs:integer" use="required">
@@ -3531,6 +3573,9 @@ elementFormDefault="qualified"
                                     </xs:attribute>
                                 <xs:attribute name="rate" type="xs:float" use="optional"/>
                     <xs:attribute name="bits" type="xs:integer" use="optional"/>
+                        <xs:attribute name="isSpecial" type="xs:boolean" use="optional" default="false"/>
+                    <xs:attribute name="hasBundledDeviceVideo" type="xs:boolean" use="optional" default="false"/>
+                    <xs:attribute name="bundledSourceFilepath" type="xs:string" use="optional"/>
                     </xs:complexType>
                             </xs:element>
                             <xs:element name="DOMSoundItem">
@@ -3653,18 +3698,13 @@ elementFormDefault="qualified"
                                                 </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>
-                                        <xs:element name="SwcItem">
-                                            <xs:complexType>
-                                                <xs:attribute name="name" type="xs:string" use="required"/>
-                                                <xs:attribute name="version" type="xs:nonNegativeInteger" use="required"/>
-                                                <xs:attribute name="isTopLevel" type="xs:boolean" use="optional" default="false"/>
-                                            </xs:complexType>
-                                        </xs:element>
+                                        <xs:element name="SwcItem" type="tns:SwcItemType"/>
                                     </xs:sequence>
                                     <xs:attribute name="name" type="xs:string" use="required"/>
                                     <xs:attribute name="itemID" type="tns:ItemIdType" use="optional"/>
                                     <xs:attribute name="linkageExportForAS" type="xs:boolean" use="optional" default="false"/>
                                     <xs:attribute name="linkageClassName" type="xs:string" use="optional"/>
+                                    <xs:attribute name="sourcePlatform" type="tns:MediaSourcePlatformType" use="optional" default="windows"/>
                                     <xs:attribute name="sourceLastImported" type="xs:integer" use="optional"/>
                                     <xs:attribute name="displayAsComponent" type="xs:boolean" use="optional" default="false"/>
                                     <xs:attribute name="customIconID" type="xs:integer" use="optional" default="0"/>
@@ -3766,6 +3806,56 @@ elementFormDefault="qualified"
                         <xs:documentation xml:lang="en">Printer settings for the document.</xs:documentation>
                     </xs:annotation>
                     <xs:complexType>
+                        <xs:attribute name="framesToPrint" default="first frame only">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Print the first frame of each scene or all frames.</xs:documentation>
+                            </xs:annotation>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="first frame only"/>
+                                    <xs:enumeration value="all frames"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="labelPages" type="xs:boolean" default="false">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Label printed storyboard frames (Page Setup: Label frames).</xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="frameCountAcrossPage" default="3">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Number of storyboard frames across a printed page.</xs:documentation>
+                            </xs:annotation>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:int">
+                                    <xs:minInclusive value="1"/>
+                                    <xs:maxInclusive value="128"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="storyBoardMargin" default="180">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">Margin between storyboard frames, in twips (20 twips per pixel). The native XFL writer accepts 0..57600; the Page Setup dialog allows 0..5760.</xs:documentation>
+                            </xs:annotation>
+                            <xs:simpleType>
+                                <xs:restriction base="xs:int">
+                                    <xs:minInclusive value="0"/>
+                                    <xs:maxInclusive value="57600"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attribute name="pageMarginLeft" type="xs:int" default="360"><xs:annotation><xs:documentation xml:lang="en">Page margin in whole twips (1440 per inch).</xs:documentation></xs:annotation></xs:attribute>
+                        <xs:attribute name="pageMarginTop" type="xs:int" default="360"><xs:annotation><xs:documentation xml:lang="en">Page margin in whole twips (1440 per inch).</xs:documentation></xs:annotation></xs:attribute>
+                        <xs:attribute name="pageMarginRight" type="xs:int" default="360"><xs:annotation><xs:documentation xml:lang="en">Page margin in whole twips (1440 per inch).</xs:documentation></xs:annotation></xs:attribute>
+                        <xs:attribute name="pageMarginBottom" type="xs:int" default="360"><xs:annotation><xs:documentation xml:lang="en">Page margin in whole twips (1440 per inch).</xs:documentation></xs:annotation></xs:attribute>
+                        <xs:attribute name="centerHorizontal" type="xs:boolean" default="true"/>
+                        <xs:attribute name="centerVertical" type="xs:boolean" default="true"/>
+                        <xs:attribute name="disablePostscript" type="xs:boolean" default="false"/>
+                        <xs:attribute name="scale" type="xs:double" default="100"><xs:annotation><xs:documentation xml:lang="en">Print scale as a percentage.</xs:documentation></xs:annotation></xs:attribute>
+                        <xs:attribute name="layout" default="actual size"><xs:simpleType><xs:restriction base="xs:string">
+                            <xs:enumeration value="actual size"/><xs:enumeration value="fit on one page"/>
+                            <xs:enumeration value="storyboard - boxes"/><xs:enumeration value="storyboard - grid"/><xs:enumeration value="storyboard - blank"/>
+                        </xs:restriction></xs:simpleType></xs:attribute>
                         <xs:attribute name="modeData" type="xs:string" use="optional"/>
                         <xs:attribute name="namesData" type="xs:string" use="optional"/>
                     </xs:complexType>
@@ -4173,6 +4263,7 @@ elementFormDefault="qualified"
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="dataBindingXML" type="xs:string" minOccurs="0"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required">
                 <xs:annotation>
@@ -4216,7 +4307,11 @@ elementFormDefault="qualified"
                 </xs:annotation>
             </xs:attribute>
             <xs:attributeGroup ref="tns:LinkageAttributeGroup"></xs:attributeGroup>
-            <xs:attribute name="lastUniqueIdentifier" type="xs:nonNegativeInteger" use="optional">
+            <xs:attribute name="hasValidCenterPoint" type="xs:boolean" default="false"/>
+        <xs:attribute name="isFlexComponent" type="xs:boolean" default="false"/>
+        <xs:attribute name="isSpriteSubclass" type="xs:boolean" default="false"/>
+        <xs:attribute name="transformCenterPoint" type="xs:string" use="optional"/>
+        <xs:attribute name="lastUniqueIdentifier" type="xs:nonNegativeInteger" use="optional">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">Last unique identifier for the symbol.</xs:documentation>
                 </xs:annotation>
@@ -4226,6 +4321,11 @@ elementFormDefault="qualified"
         <xs:sequence>
             <xs:element name="parametersAsXML" type="xs:string" minOccurs="0"/>
             <xs:element name="classProperties" type="xs:string" minOccurs="0"/>
+            <xs:element name="tasks" minOccurs="0"><xs:complexType><xs:sequence>
+                <xs:element name="Task" minOccurs="0" maxOccurs="unbounded"><xs:complexType>
+                    <xs:attribute name="description" type="xs:string" use="optional"/><xs:attribute name="script" type="xs:string" use="optional"/>
+                </xs:complexType></xs:element>
+            </xs:sequence></xs:complexType></xs:element>
 <xs:element name="customIcon" minOccurs="0">
                                             <xs:complexType>
                                                 <xs:sequence>
@@ -4247,6 +4347,12 @@ elementFormDefault="qualified"
                                                 </xs:sequence>
                                             </xs:complexType>
                                         </xs:element>        </xs:sequence>
+        <xs:attribute name="symbolDescription" type="xs:string" use="optional"/>
+        <xs:attribute name="requiredMinimumPlayerVersionName" type="xs:string" use="optional"/>
+        <xs:attribute name="descriptionType" default="none"><xs:simpleType><xs:restriction base="xs:string"><xs:enumeration value="none"/><xs:enumeration value="reference"/><xs:enumeration value="text"/></xs:restriction></xs:simpleType></xs:attribute>
+        <xs:attribute name="parametersAreNew" type="xs:boolean" default="false"/>
+        <xs:attribute name="customUIScmHRef" type="xs:string" use="optional"/>
+        <xs:attribute name="customUIScmSourceFilename" type="xs:string" use="optional"/>
         <xs:attribute name="tooltip" type="xs:string" use="optional"/>
         <xs:attribute name="customIconID" type="xs:integer" use="optional"/>
         <xs:attribute name="actionscriptClass" type="xs:string" use="optional"/>
@@ -4293,11 +4399,7 @@ elementFormDefault="qualified"
                             <xs:annotation>
                                 <xs:documentation xml:lang="en">ActionScript code associated with the symbol instance.</xs:documentation>
                             </xs:annotation>
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xs:element name="script" type="xs:string"/>
-                                </xs:sequence>
-                            </xs:complexType>
+                            <xs:complexType><xs:complexContent><xs:extension base="tns:ActionscriptType"/></xs:complexContent></xs:complexType>
                         </xs:element>
                         <xs:element name="filters" minOccurs="0" maxOccurs="1" type="tns:FilterListType">
                             <xs:annotation>
@@ -4487,7 +4589,10 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Whether the symbol instance is locked in the editor.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
-                    <xs:attribute name="trackAsMenu" type="xs:boolean" default="false">
+                    <xs:attribute name="isExtensible" type="xs:boolean" default="false"/>
+        <xs:attribute name="animationSymbolMode" type="tns:SignedIntegerListType" use="optional"/>
+        <xs:attribute name="animationFrameOffset" type="tns:SignedIntegerListType" use="optional"/>
+        <xs:attribute name="trackAsMenu" type="xs:boolean" default="false">
                         <xs:annotation>
                             <xs:documentation xml:lang="en">Whether a button instance tracks mouse interaction as a menu.</xs:documentation>
                         </xs:annotation>
@@ -4497,6 +4602,7 @@ elementFormDefault="qualified"
                             <xs:documentation xml:lang="en">Whether to cache the symbol instance as a bitmap.</xs:documentation>
                         </xs:annotation>
                     </xs:attribute>
+                    <xs:attribute name="exportAsBitmap" type="xs:boolean" default="false"/>
                     <xs:attribute name="bits32" type="xs:boolean" default="true">
                         <xs:annotation>
                             <xs:documentation xml:lang="en">Set to false when the cache as bitmap is opaque. Since: Flash CS5.5</xs:documentation>
@@ -4547,4 +4653,12 @@ elementFormDefault="qualified"
             <xs:attribute name="alpha" default="1"><xs:simpleType><xs:restriction base="xs:double"><xs:minInclusive value="0"/><xs:maxInclusive value="1"/></xs:restriction></xs:simpleType></xs:attribute>
         </xs:complexType></xs:element>
     </xs:sequence></xs:complexType>
+    <xs:simpleType name="SignedIntegerListType"><xs:restriction base="xs:string">
+        <xs:pattern value="-?[0-9]+(,-?[0-9]+)*"/>
+    </xs:restriction></xs:simpleType>
+    <xs:complexType name="ActionscriptType"><xs:sequence><xs:element name="script" type="xs:string"/></xs:sequence>
+        <xs:attribute name="breakpoints" type="tns:SignedIntegerListType" use="optional"/>
+        <xs:attribute name="offsets" type="tns:SignedIntegerListType" use="optional"/>
+        <xs:attribute name="href" type="xs:string" use="optional"/>
+    </xs:complexType>
 </xs:schema>

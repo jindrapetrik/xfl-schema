@@ -4,7 +4,7 @@
     <h1>Adobe Flash publish profiles</h1>
     <p>Companion schema for namespace-free PublishSettings.xml. Author: Jindra Petrik (JPEXS). License: CC-BY-4.0, like xfl.xsd.</p>
     <p>Scalar values remain strings because native profiles include empty numeric and enumeration fields.</p>
-    <h2>Changelog</h2><ul><li><b>2026-10-22 v2.0.0</b>: Added publish profile groups, library metadata and accepted legacy library-path fields.</li></ul>
+    <h2>Changelog</h2><ul><li><b>2026-10-23 v2.1.0</b>: Added SWC publish fields (swc, swcDefaultName, swcFileName) and the newer CompressionType setting.</li><li><b>2026-10-22 v2.0.0</b>: Added publish profile groups, library metadata and accepted legacy library-path fields.</li></ul>
   </div></xs:documentation></xs:annotation>
   <xs:element name="flash_profiles"><xs:complexType><xs:sequence>
     <xs:element name="flash_profile" minOccurs="0" maxOccurs="unbounded"><xs:complexType><xs:sequence>
@@ -33,6 +33,7 @@
     <xs:element name="png" type="xs:string" minOccurs="0"/>
     <xs:element name="qt" type="xs:string" minOccurs="0"/>
     <xs:element name="rnwk" type="xs:string" minOccurs="0"/>
+    <xs:element name="swc" type="xs:string" minOccurs="0"/>
     <xs:element name="flashDefaultName" type="xs:string" minOccurs="0"/>
     <xs:element name="projectorWinDefaultName" type="xs:string" minOccurs="0"/>
     <xs:element name="projectorMacDefaultName" type="xs:string" minOccurs="0"/>
@@ -42,6 +43,7 @@
     <xs:element name="pngDefaultName" type="xs:string" minOccurs="0"/>
     <xs:element name="qtDefaultName" type="xs:string" minOccurs="0"/>
     <xs:element name="rnwkDefaultName" type="xs:string" minOccurs="0"/>
+    <xs:element name="swcDefaultName" type="xs:string" minOccurs="0"/>
     <xs:element name="flashFileName" type="xs:string" minOccurs="0"/>
     <xs:element name="projectorWinFileName" type="xs:string" minOccurs="0"/>
     <xs:element name="projectorMacFileName" type="xs:string" minOccurs="0"/>
@@ -51,6 +53,7 @@
     <xs:element name="pngFileName" type="xs:string" minOccurs="0"/>
     <xs:element name="qtFileName" type="xs:string" minOccurs="0"/>
     <xs:element name="rnwkFileName" type="xs:string" minOccurs="0"/>
+    <xs:element name="swcFileName" type="xs:string" minOccurs="0"/>
   </xs:all><xs:attribute name="enabled" type="xs:boolean" default="true"/></xs:complexType>
   <xs:complexType name="PublishHtmlPropertiesType"><xs:all>
     <xs:element name="VersionDetectionIfAvailable" type="xs:string" minOccurs="0"/>
@@ -101,6 +104,7 @@
     <xs:element name="DebuggingPermitted" type="xs:string" minOccurs="0"/>
     <xs:element name="DebuggingPassword" type="xs:string" minOccurs="0"/>
     <xs:element name="CompressMovie" type="xs:string" minOccurs="0"/>
+    <xs:element name="CompressionType" type="xs:string" minOccurs="0"/>
     <xs:element name="InvisibleLayer" type="xs:string" minOccurs="0"/>
     <xs:element name="DeviceSound" type="xs:string" minOccurs="0"/>
     <xs:element name="StreamUse8kSampleRate" type="xs:string" minOccurs="0"/>
